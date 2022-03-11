@@ -21,6 +21,8 @@ import 'package:ptnsupplier/scaffold/detail_news.dart';
 import 'package:ptnsupplier/utility/my_style.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+
 class Home extends StatefulWidget {
   final UserModel userModel;
 
@@ -400,6 +402,43 @@ class _HomeState extends State<Home> {
             );
           });
           Navigator.of(context).push(materialPageRoute);
+        },
+      ),
+    );
+  }
+
+  Widget offeritemBox() {
+    String login = myUserModel.subject;
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.8,
+      // height: 80.0,
+      child: GestureDetector(
+        child: Card(
+          color: Colors.greenAccent.shade100,
+          child: Container(
+            padding: EdgeInsets.all(16.0),
+            alignment: AlignmentDirectional(0.0, 0.0),
+            child: Row(
+              children: <Widget>[
+                Container(
+                  width: 45.0,
+                  child: Image.asset('images/offer.png'),
+                  padding: EdgeInsets.all(8.0),
+                ),
+                Text(
+                  'เสนอยาใหม่',
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+              ],
+            ),
+          ),
+        ),
+        onTap: () {
+          print('You click product');
+          routeToListProduct(0);
         },
       ),
     );
@@ -788,6 +827,47 @@ class _HomeState extends State<Home> {
   }
 
   Widget row3Right() {
+    String login = myUserModel.subject;
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.45,
+      // height: 80.0,
+      child: GestureDetector(
+        child: Card(
+          // color: Colors.green.shade100,
+          child: Container(
+            padding: EdgeInsets.all(16.0),
+            alignment: AlignmentDirectional(0.0, 0.0),
+            child: Column(
+              children: <Widget>[
+                Container(
+                  width: 70.0,
+                  child: Image.asset('images/offer.png'),
+                ),
+                Text(
+                  'เสนอยาใหม่',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+              ],
+            ),
+          ),
+        ),
+        onTap: () {
+          print('You click offer new item');
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => WebView(
+                        userModel: myUserModel,
+                      )));
+        },
+      ),
+    );
+  }
+
+  Widget row4Left() {
     // losesale
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
@@ -859,17 +939,17 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // Widget row4Menu() {
-  //   return Row(
-  //     // mainAxisAlignment: MainAxisAlignment.spaceAround,
-  //     // mainAxisSize: MainAxisSize.max,
-  //     mainAxisSize: MainAxisSize.min,
-  //     children: <Widget>[
-  //       // row4Left(),
-  //       // row4Right(),
-  //     ],
-  //   );
-  // }
+  Widget row4Menu() {
+    return Row(
+      // mainAxisAlignment: MainAxisAlignment.spaceAround,
+      // mainAxisSize: MainAxisSize.max,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        row4Left(),
+        // row4Right(),
+      ],
+    );
+  }
 
   Widget mySizebox() {
     return SizedBox(
@@ -893,7 +973,7 @@ class _HomeState extends State<Home> {
           mySizebox(),
           row3Menu(),
           mySizebox(),
-          // row4Menu(),
+          row4Menu(),
           // logoutBox(),
           mySizebox(),
           mySizebox(),
@@ -942,6 +1022,84 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class WebViewWidget extends StatefulWidget {
+  WebViewWidget({Key key}) : super(key: key);
+
+  @override
+  _WebViewWidgetState createState() => _WebViewWidgetState();
+}
+
+class _WebViewWidgetState extends State {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("Sample WebView Widget"),
+          backgroundColor: MyStyle().bgColor,
+        ),
+        body: Center(
+          child: Column(
+            children: [
+              Container(
+                child: FlatButton(
+                    child: Text("Open my Blog"),
+                    onPressed: () {
+                      print("in");
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => WebView()));
+                    }),
+              )
+            ],
+          ),
+        ));
+  }
+}
+
+class WebView extends StatefulWidget {
+  final UserModel userModel;
+
+  WebView({Key key, this.userModel}) : super(key: key);
+
+  @override
+  _WebViewState createState() => _WebViewState();
+}
+
+class _WebViewState extends State<WebView> {
+  UserModel myUserModel;
+
+  @override
+  void initState() {
+    super.initState();
+    myUserModel = widget.userModel;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String memberId = myUserModel.id.toString();
+    String memberCode = myUserModel.code;
+    String url =
+        'http://ptnpharma.com/supplier/form_offermed_mobile.php?memberId=$memberId&memberCode=$memberCode'; //
+    print('URL ==>> $url');
+    return WebviewScaffold(
+      url: url, //"https://www.androidmonks.com",
+      appBar: AppBar(
+        backgroundColor: MyStyle().barColor,
+        title: Text("ฟอร์มเสนอยาใหม่"),
+      ),
+      withZoom: true,
+      withJavascript: true,
+      withLocalStorage: true,
+      appCacheEnabled: false,
+      ignoreSSLErrors: true,
     );
   }
 }

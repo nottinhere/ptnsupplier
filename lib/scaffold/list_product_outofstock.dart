@@ -472,7 +472,7 @@ class _ListProductState extends State<ListProductOutofstock> {
             activeTextColor: Colors.white,
             inactiveBgColor: Colors.grey.shade500,
             inactiveTextColor: Colors.white,
-            labels: ['รอ', 'สั่งแล้ว'],
+            labels: ['รอสั่งซื้อ', 'กดเมื่อสั่งซื้อ'],
             // icons: [FontAwesomeIcons.check, FontAwesomeIcons.times],
             onToggle: (index) async {
               String url =
@@ -497,7 +497,7 @@ class _ListProductState extends State<ListProductOutofstock> {
             activeTextColor: Colors.white,
             inactiveBgColor: Colors.blueGrey.shade500,
             inactiveTextColor: Colors.white,
-            labels: ['ยกเลิก', 'สั่งแล้ว'],
+            labels: ['ยกเลิก', 'สินค้าค้างส่ง'],
             // icons: [FontAwesomeIcons.check, FontAwesomeIcons.times],
             onToggle: (index) async {
               String url =
