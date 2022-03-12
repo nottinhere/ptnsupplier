@@ -178,6 +178,37 @@ class _ListProductState extends State<ListProduct> {
     );
   }
 
+  Widget recommendTag() {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.22,
+      // height: 80.0,
+      child: GestureDetector(
+        child: Card(
+          color: Colors.blue.shade400,
+          child: Container(
+            padding: EdgeInsets.all(4.0),
+            alignment: AlignmentDirectional(0.0, 0.0),
+            child: Column(
+              children: <Widget>[
+                Text(
+                  'สินค้าแนะนำ',
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        ),
+        onTap: () {
+          print('You click recommend');
+          // routeToListProduct(3);
+        },
+      ),
+    );
+  }
+
   Widget newproductTag() {
     return Container(
       width: MediaQuery.of(context).size.width * 0.20,
@@ -295,6 +326,10 @@ class _ListProductState extends State<ListProduct> {
         (filterProductAllModels[index].updateprice == 1 &&
                 filterProductAllModels[index].itemStatus == 1)
             ? updatepriceTag()
+            : Container(),
+        (filterProductAllModels[index].recommend == 1 &&
+                filterProductAllModels[index].itemStatus == 1)
+            ? recommendTag()
             : Container(),
         SizedBox(
           width: 5.0,
