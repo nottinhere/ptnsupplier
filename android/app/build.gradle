@@ -34,7 +34,7 @@ if (keystorePropertiesFile.exists()) {
 
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
@@ -47,12 +47,12 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.ptnsupplier.app"
-        minSdkVersion 16
-        targetSdkVersion 29
+        minSdkVersion 18
+        targetSdkVersion 31
         // versionCode flutterVersionCode.toInteger()
         // versionName flutterVersionName
-        versionCode 4
-        versionName '1.0.4'
+        versionCode 5
+        versionName '1.0.5'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
