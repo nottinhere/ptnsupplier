@@ -1050,7 +1050,7 @@ class _WebViewWidgetState extends State {
           child: Column(
             children: [
               Container(
-                child: FlatButton(
+                child: TextButton(
                     child: Text("Open my Blog"),
                     onPressed: () {
                       print("in");

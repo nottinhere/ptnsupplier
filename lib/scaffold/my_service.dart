@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:barcode_scan/barcode_scan.dart';
+// import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:ptnsupplier/models/user_model.dart';
@@ -76,38 +76,38 @@ class _MyServiceState extends State<MyService> {
     );
   }
 
-  Widget menuReadQRcode() {
-    return ListTile(
-      leading: Icon(
-        Icons.photo_camera,
-        size: 36.0,
-      ),
-      title: Text('Read Bar code'),
-      subtitle: Text('Read Barcode or QR code'),
-      onTap: () {
-        readQRcode();
-        Navigator.of(context).pop();
-      },
-    );
-  }
+  // Widget menuReadQRcode() {
+  //   return ListTile(
+  //     leading: Icon(
+  //       Icons.photo_camera,
+  //       size: 36.0,
+  //     ),
+  //     title: Text('Read Bar code'),
+  //     subtitle: Text('Read Barcode or QR code'),
+  //     onTap: () {
+  //       readQRcode();
+  //       Navigator.of(context).pop();
+  //     },
+  //   );
+  // }
 
-  Future<void> readQRcode() async {
-    try {
-      qrString = await BarcodeScanner.scan();
-      print('QR code = $qrString');
-      if (qrString != null) {
-        MaterialPageRoute materialPageRoute =
-            MaterialPageRoute(builder: (BuildContext buildContext) {
-          return ResultCode(
-            result: qrString,
-          );
-        }); // Link to  screen
-        Navigator.of(context).push(materialPageRoute);
-      }
-    } catch (e) {
-      print('e = $e');
-    }
-  }
+  // Future<void> readQRcode() async {
+  //   try {
+  //     qrString = await BarcodeScanner.scan();
+  //     print('QR code = $qrString');
+  //     if (qrString != null) {
+  //       MaterialPageRoute materialPageRoute =
+  //           MaterialPageRoute(builder: (BuildContext buildContext) {
+  //         return ResultCode(
+  //           result: qrString,
+  //         );
+  //       }); // Link to  screen
+  //       Navigator.of(context).push(materialPageRoute);
+  //     }
+  //   } catch (e) {
+  //     print('e = $e');
+  //   }
+  // }
 
   Widget showAppName() {
     return Text('For Supplier');

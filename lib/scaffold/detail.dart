@@ -567,7 +567,7 @@ class _DetailState extends State<Detail> {
             title: Text('Complete'),
             content: Text('แก้ไขดีลเรียบร้อย'),
             actions: <Widget>[
-              FlatButton(
+              TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                     backProcess();
@@ -588,8 +588,11 @@ class _DetailState extends State<Detail> {
       children: <Widget>[
         Container(
           margin: EdgeInsets.only(right: 30.0),
-          child: RaisedButton(
-            color: Color.fromARGB(0xff, 13, 163, 93),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              primary: Color.fromARGB(0xff, 13, 163, 93),
+            ),
+            // color: Color.fromARGB(0xff, 13, 163, 93),
             onPressed: () {
               memberID = myUserModel.id.toString();
               var medID = currentProductAllModel.id;
@@ -734,8 +737,11 @@ class _DetailState extends State<Detail> {
         Row(
           children: <Widget>[
             Expanded(
-              child: RaisedButton(
-                color: Colors.lightGreen,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.lightGreen,
+                ),
+                // color: Colors.lightGreen,
                 child: Text(
                   'Update deal',
                   style: TextStyle(

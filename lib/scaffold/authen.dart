@@ -80,11 +80,13 @@ class _AuthenState extends State<Authen> {
   Widget loginButton() {
     return Container(
       width: 250.0,
-      child: RaisedButton(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
+      child: ElevatedButton(
+        // shape: RoundedRectangleBorder(
+        //   borderRadius: BorderRadius.circular(12.0),
+        // ),
+        style: ElevatedButton.styleFrom(
+          primary: MyStyle().textColor,
         ),
-        color: MyStyle().textColor,
         child: Text('Login',
             style: TextStyle(
               color: Colors.white,
@@ -107,7 +109,7 @@ class _AuthenState extends State<Authen> {
   }
 
   Widget okButtonLogin(BuildContext buildContext) {
-    return FlatButton(
+    return TextButton(
       child: Text('OK'),
       onPressed: () {
         // Navigator.of(buildContext).pop();  // pop คือการทำให้มันหายไป
