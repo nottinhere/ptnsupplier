@@ -222,7 +222,7 @@ class _DetailCartState extends State<DetailCart> {
   Future<void> editDetailCart(
       String productID, String unitSize, String memberID) async {
     String url =
-        'http://ptnpharma.com/apisupplier/json_updatemycart.php?productID=$productID&unitSize=$unitSize&newQTY=$newQTY&memberID=$memberID';
+        'https://ptnpharma.com/apisupplier/json_updatemycart.php?productID=$productID&unitSize=$unitSize&newQTY=$newQTY&memberID=$memberID';
 
     await http.get(url).then((response) {
       readCart();
@@ -282,7 +282,7 @@ class _DetailCartState extends State<DetailCart> {
     print('productID = $productID ,unitSize = $unitSize ,memberID = $memberID');
 
     String url =
-        'http://ptnpharma.com/apisupplier/json_removeitemincart.php?productID=$productID&unitSize=$unitSize&memberID=$memberID';
+        'https://ptnpharma.com/apisupplier/json_removeitemincart.php?productID=$productID&unitSize=$unitSize&memberID=$memberID';
 
     await http.get(url).then((response) {
       readCart();

@@ -145,7 +145,7 @@ class _AuthenState extends State<Authen> {
       // Have space
       normalDialog(context, 'Have space', 'Please fill all input');
     } else {
-      String urlPop = 'http://ptnpharma.com/apisupplier/json_popup.php';
+      String urlPop = 'https://ptnpharma.com/apisupplier/json_popup.php';
       http.Response responsePop = await http.get(urlPop);
       var resultPop = json.decode(responsePop.body);
       var mapItemPopup = resultPop[

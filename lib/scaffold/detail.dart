@@ -1,12 +1,15 @@
 import 'dart:convert';
-
-import 'package:flutter/material.dart';
+import 'dart:async';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+
 import 'package:ptnsupplier/models/product_all_model.dart';
 import 'package:ptnsupplier/models/user_model.dart';
 import 'package:ptnsupplier/scaffold/detail_cart.dart';
 import 'package:ptnsupplier/utility/my_style.dart';
 import 'package:ptnsupplier/utility/normal_dialog.dart';
+import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 
 class Detail extends StatefulWidget {
   final ProductAllModel productAllModel;
@@ -26,7 +29,15 @@ class _DetailState extends State<Detail> {
   UserModel myUserModel;
   String id; // productID
 
-  String txtdeal = '', txtfree = '', txtprice = '', txtnote = '';
+  String txtdeal = '',
+      txtfree = '',
+      txtprice = '',
+      txtpricelabel = '',
+      txtpriceretail = '',
+      txtnote = '',
+      txtusefor = '',
+      txtmethod = '',
+      txtfda = '';
   String memberID;
 
   // Method
@@ -140,7 +151,7 @@ class _DetailState extends State<Detail> {
                 Text(
                   'สินค้าแนะนำ',
                   style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ),
@@ -467,13 +478,78 @@ class _DetailState extends State<Detail> {
       padding: EdgeInsets.only(left: 10.0, right: 20.0),
       child: Column(
         children: <Widget>[
-          Text('ราคา :'),
+          Text('ราคาขายส่ง :'),
           TextFormField(
             style: TextStyle(color: Colors.black),
             initialValue: productAllModel.priceOrder, // set default value
-            keyboardType: TextInputType.number,
+            // keyboardType: TextInputType.number,
+            keyboardType:
+                TextInputType.numberWithOptions(signed: true, decimal: true),
+
             onChanged: (string) {
               txtprice = string.trim();
+            },
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.only(
+                top: 6.0,
+              ),
+              prefixIcon: Icon(Icons.mode_edit, color: Colors.grey),
+              // border: InputBorder.none,
+              hintText: 'ราคา',
+              hintStyle: TextStyle(color: Colors.grey),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget pricelabelBox() {
+    return Container(
+      // decoration: MyStyle().boxLightGreen,
+      // height: 35.0,
+      width: MediaQuery.of(context).size.width * 0.45,
+      padding: EdgeInsets.only(left: 10.0, right: 20.0),
+      child: Column(
+        children: <Widget>[
+          Text('ราคาป้าย :'),
+          TextFormField(
+            style: TextStyle(color: Colors.black),
+            initialValue: productAllModel.priceLabel, // set default value
+            keyboardType: TextInputType.number,
+            onChanged: (string) {
+              txtpricelabel = string.trim();
+            },
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.only(
+                top: 6.0,
+              ),
+              prefixIcon: Icon(Icons.mode_edit, color: Colors.grey),
+              // border: InputBorder.none,
+              hintText: 'ราคา',
+              hintStyle: TextStyle(color: Colors.grey),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget pricesaleBox() {
+    return Container(
+      // decoration: MyStyle().boxLightGreen,
+      // height: 35.0,
+      width: MediaQuery.of(context).size.width * 0.45,
+      padding: EdgeInsets.only(left: 10.0, right: 20.0),
+      child: Column(
+        children: <Widget>[
+          Text('ราคาแนะนำขายปลีก :'),
+          TextFormField(
+            style: TextStyle(color: Colors.black),
+            initialValue: productAllModel.priceRetail, // set default value
+            keyboardType: TextInputType.number,
+            onChanged: (string) {
+              txtpriceretail = string.trim();
             },
             decoration: InputDecoration(
               contentPadding: EdgeInsets.only(
@@ -493,7 +569,7 @@ class _DetailState extends State<Detail> {
   Widget noteBox() {
     return Container(
       margin: EdgeInsets.only(left: 10.0, right: 10.0),
-      child: TextField(
+      child: TextFormField(
         onChanged: (value) {
           txtnote = value.trim();
         },
@@ -502,6 +578,57 @@ class _DetailState extends State<Detail> {
         decoration: InputDecoration(
             prefixIcon: Icon(Icons.mode_edit, color: Colors.grey),
             labelText: 'Note :'),
+      ),
+    );
+  }
+
+  Widget fdaBox() {
+    return Container(
+      margin: EdgeInsets.only(left: 10.0, right: 10.0),
+      child: TextFormField(
+        onChanged: (value) {
+          txtfda = value.trim();
+        },
+        initialValue: productAllModel.fda, // set default value
+        keyboardType: TextInputType.multiline,
+        maxLines: 2,
+        decoration: InputDecoration(
+            prefixIcon: Icon(Icons.mode_edit, color: Colors.grey),
+            labelText: 'เลขทะเบียน อ.ย. :'),
+      ),
+    );
+  }
+
+  Widget useforBox() {
+    return Container(
+      margin: EdgeInsets.only(left: 10.0, right: 10.0),
+      child: TextFormField(
+        onChanged: (value) {
+          txtusefor = value.trim();
+        },
+        initialValue: productAllModel.usefor, // set default value
+        keyboardType: TextInputType.multiline,
+        maxLines: 2,
+        decoration: InputDecoration(
+            prefixIcon: Icon(Icons.mode_edit, color: Colors.grey),
+            labelText: 'ใช้เพื่อ :'),
+      ),
+    );
+  }
+
+  Widget methodBox() {
+    return Container(
+      margin: EdgeInsets.only(left: 10.0, right: 10.0),
+      child: TextFormField(
+        onChanged: (value) {
+          txtmethod = value.trim();
+        },
+        initialValue: productAllModel.method, // set default value
+        keyboardType: TextInputType.multiline,
+        maxLines: 2,
+        decoration: InputDecoration(
+            prefixIcon: Icon(Icons.mode_edit, color: Colors.grey),
+            labelText: 'วิธีการใช้ :'),
       ),
     );
   }
@@ -523,7 +650,7 @@ class _DetailState extends State<Detail> {
                 width: MediaQuery.of(context).size.width * 0.45,
                 child: Column(
                   children: <Widget>[
-                    Text('ราคาขาย'),
+                    Text('ราคาทุน'),
                     Text(
                       productAllModel.priceSale +
                           '/' +
@@ -539,6 +666,15 @@ class _DetailState extends State<Detail> {
               ),
             ],
           ),
+          Row(
+            children: <Widget>[
+              pricelabelBox(),
+              pricesaleBox(),
+            ],
+          ),
+          useforBox(),
+          methodBox(),
+          fdaBox(),
           noteBox(),
           //  Row(children: <Widget>[priceBox(),priceBox(),],),
           //  Row(children: <Widget>[noteBox()],),
@@ -548,15 +684,37 @@ class _DetailState extends State<Detail> {
   }
 
   Future<void> submitThread() async {
-    try {
-      var medID = currentProductAllModel.id;
-      String url =
-          'http://ptnpharma.com/apisupplier//json_submit_deal.php?memberId=$memberID&medId=$medID&deal_order=$txtdeal&free_order=$txtfree&price_order=$txtprice&note=$txtnote'; //'';
+    // try {
+    var medID = currentProductAllModel.id;
+    // String url =
+    //     'https://ptnpharma.com/apisupplier/json_submit_deal.php?memberId=$memberID&medId=$medID&deal_order=$txtdeal&free_order=$txtfree&price_order=$txtprice&price_label=$txtpricelabel&price_retail=$txtpriceretail'; // &note=$txtnote&method=$txtmethod&usefor=$txtusefor&fda=$txtfda;
 
-      await http.get(url).then((value) {
-        confirmSubmit();
-      });
-    } catch (e) {}
+    String url =
+        'https://ptnpharma.com/apisupplier/json_submit_deal.php'; // &note=$txtnote&method=$txtmethod&usefor=$txtusefor&fda=$txtfda;
+    print('submitDeal >> $url');
+    print(
+        'Data option >> note : $txtnote |  method : $txtmethod | usefor : $txtusefor | fda : $txtfda |');
+
+    // await http.get(Uri.parse(url)).then((value) {
+    //   confirmSubmit();
+    // });
+
+    await http.post(Uri.parse(url), body: {
+      'memberId': memberID,
+      'medId': medID.toString(),
+      'deal_order': txtdeal,
+      'free_order': txtfree,
+      'price_order': txtprice,
+      'price_label': txtpricelabel,
+      'price_retail': txtpriceretail,
+      'note': txtnote,
+      'method': txtmethod,
+      'usefor': txtusefor,
+      'fda': txtfda
+    }).then((value) {
+      confirmSubmit();
+    });
+    // } catch (e) {}
   }
 
   Future<void> confirmSubmit() async {
@@ -621,6 +779,43 @@ class _DetailState extends State<Detail> {
     );
   }
 
+  Widget buttonMoreData() {
+    return Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => WebView(
+                            productAllModel: currentProductAllModel,
+                            userModel: myUserModel,
+                          )));
+            },
+            child: Text('จัดการรูปและลิงก์', style: TextStyle(fontSize: 16)),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10.00, right: 10.00),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => WebPreView(
+                            productAllModel: currentProductAllModel,
+                            userModel: myUserModel,
+                          )));
+            },
+            child: const Text('ดูตัวอย่าง', style: TextStyle(fontSize: 16)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget showPackage(int index) {
     return Text(productAllModel.unitOrderShow);
   }
@@ -661,7 +856,7 @@ class _DetailState extends State<Detail> {
     amontCart = 0;
     String memberId = myUserModel.id.toString();
     String url =
-        'http://ptnsupplier.com/api/json_loadmycart.php?memberId=$memberId';
+        'https://ptnsupplier.com/api/json_loadmycart.php?memberId=$memberId';
 
     http.Response response = await http.get(url);
     var result = json.decode(response.body);
@@ -777,7 +972,7 @@ class _DetailState extends State<Detail> {
   Future<void> addCart(
       String productID, String unitSize, int qTY, String memberID) async {
     String url =
-        'http://ptnsupplier.com/api/json_savemycart.php?productID=$productID&unitSize=$unitSize&QTY=$qTY&memberID=$memberID';
+        'https://ptnsupplier.com/api/json_savemycart.php?productID=$productID&unitSize=$unitSize&QTY=$qTY&memberID=$memberID';
 
     http.Response response = await http.get(url).then((response) {
       print('upload ok');
@@ -812,7 +1007,175 @@ class _DetailState extends State<Detail> {
         showFormDeal(),
         submitButton(),
         showPhoto(),
+        buttonMoreData(),
       ],
+    );
+  }
+}
+
+class WebViewWidget extends StatefulWidget {
+  WebViewWidget({Key key}) : super(key: key);
+
+  @override
+  _WebViewWidgetState createState() => _WebViewWidgetState();
+}
+
+class _WebViewWidgetState extends State {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("Sample WebView Widget"),
+          backgroundColor: MyStyle().bgColor,
+        ),
+        body: Center(
+          child: Column(
+            children: [
+              Container(
+                child: TextButton(
+                    child: Text("Open my Blog"),
+                    onPressed: () {
+                      print("in");
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => WebView()));
+                    }),
+              )
+            ],
+          ),
+        ));
+  }
+}
+
+class WebView extends StatefulWidget {
+  final ProductAllModel productAllModel;
+  final UserModel userModel;
+
+  WebView({Key key, this.productAllModel, this.userModel}) : super(key: key);
+
+  @override
+  _WebViewState createState() => _WebViewState();
+}
+
+class _WebViewState extends State<WebView> {
+  ProductAllModel currentProductAllModel;
+  UserModel myUserModel;
+
+  @override
+  void initState() {
+    super.initState();
+    currentProductAllModel = widget.productAllModel;
+    myUserModel = widget.userModel;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String memberId = myUserModel.id.toString();
+    String productId = currentProductAllModel.id.toString();
+    String memberCode = myUserModel.code;
+    String url =
+        'https://ptnpharma.com/supplier/pages/blueimp/product_mobile.php?mode=u&sup_id=$memberId&id=$productId'; //
+    print('URL ==>> $url');
+    return WebviewScaffold(
+      url: url, //"https://www.androidmonks.com",
+      appBar: AppBar(
+        backgroundColor: MyStyle().barColor,
+        title: Text("จัดการรูปและลิงก์"),
+      ),
+      withZoom: true,
+      withJavascript: true,
+      withLocalStorage: true,
+      appCacheEnabled: false,
+      ignoreSSLErrors: true,
+    );
+  }
+}
+
+class WebPreViewWidget extends StatefulWidget {
+  WebPreViewWidget({Key key}) : super(key: key);
+
+  @override
+  _WebPreViewWidgetState createState() => _WebPreViewWidgetState();
+}
+
+class _WebPreViewWidgetState extends State {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("Sample WebView Widget"),
+          backgroundColor: MyStyle().bgColor,
+        ),
+        body: Center(
+          child: Column(
+            children: [
+              Container(
+                child: TextButton(
+                    child: Text("Open my Blog"),
+                    onPressed: () {
+                      print("in");
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => WebPreView()));
+                    }),
+              )
+            ],
+          ),
+        ));
+  }
+}
+
+class WebPreView extends StatefulWidget {
+  final ProductAllModel productAllModel;
+  final UserModel userModel;
+
+  WebPreView({Key key, this.productAllModel, this.userModel}) : super(key: key);
+
+  @override
+  _WebPreViewState createState() => _WebPreViewState();
+}
+
+class _WebPreViewState extends State<WebPreView> {
+  ProductAllModel currentProductAllModel;
+  UserModel myUserModel;
+
+  @override
+  void initState() {
+    super.initState();
+    currentProductAllModel = widget.productAllModel;
+    myUserModel = widget.userModel;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String memberId = myUserModel.id.toString();
+    String productId = currentProductAllModel.id.toString();
+    String memberCode = myUserModel.code;
+    String url =
+        'https://ptnpharma.com/shop/pages/forms/product_preview.php?mode=v&id=$productId&sup_id=$memberId'; //
+
+    print('URL ==>> $url');
+    return WebviewScaffold(
+      url: url, //"https://www.androidmonks.com",
+      appBar: AppBar(
+        backgroundColor: MyStyle().barColor,
+        title: Text("ตัวอย่างมุมมองลูกค้า"),
+      ),
+      withZoom: true,
+      withJavascript: true,
+      withLocalStorage: true,
+      appCacheEnabled: false,
+      ignoreSSLErrors: true,
     );
   }
 }

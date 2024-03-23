@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "509709375018",
+    "project_id": "ptn-pharma-center",
+    "storage_bucket": "ptn-pharma-center.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:509709375018:android:2fecc5a237ebb43bb05553",
+        "android_client_info": {
+          "package_name": "com.ptncenter.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "509709375018-4j0ckd3nvh65f39n9hi5ms683841m8uj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2Brh6V7u_LowjWbEyXpQRskhnVufLL8U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "509709375018-4j0ckd3nvh65f39n9hi5ms683841m8uj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -47,7 +47,7 @@ class _DetailState extends State<DetailView> {
       print('url = $url');
       http.Response response = await http.get(url);
       var result = json.decode(response.body);
-      print('result = $result');
+      print('result detail = $result');
 
       var itemProducts = result['itemsProduct'];
       for (var map in itemProducts) {

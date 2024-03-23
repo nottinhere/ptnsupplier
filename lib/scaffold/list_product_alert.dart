@@ -92,9 +92,9 @@ class _ListProductAlertState extends State<ListProductAlert> {
   Future<void> readData() async {
     // String url = MyStyle().readAllProduct;
     int memberId = myUserModel.id;
-    String url = 'http://ptnpharma.com/apisupplier/json_product_alert.php';
+    String url = 'https://ptnpharma.com/apisupplier/json_product_alert.php';
     if (myIndex != 0) {
-      url = 'http://ptnpharma.com/apisupplier/json_product_alert.php';
+      url = 'https://ptnpharma.com/apisupplier/json_product_alert.php';
     }
 
     http.Response response = await http.get(url);
@@ -393,7 +393,7 @@ class _ListProductAlertState extends State<ListProductAlert> {
     String memberId = myUserModel.id.toString();
     print(memberId);
     String url =
-        'http://ptnpharma.com/apisupplier/json_loadmycart.php?memberId=$memberId';
+        'https://ptnpharma.com/apisupplier/json_loadmycart.php?memberId=$memberId';
 
     http.Response response = await http.get(url);
     var result = json.decode(response.body);

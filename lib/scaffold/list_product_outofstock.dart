@@ -98,8 +98,8 @@ class _ListProductState extends State<ListProductOutofstock> {
     // String url = MyStyle().readAllProduct;
     int memberId = myUserModel.id;
     String url =
-        'http://ptnpharma.com/apisupplier/json_data_product_outofstock.php?memberId=$memberId&searchKey=$searchString&page=$page&sort=$sort';
-    // 'http://ptnpharma.com/apisupplier/json_data_product_outofstock_checkorder.php?memberId=$memberId&searchKey=$searchString&page=$page&sort=$sort';
+        'https://ptnpharma.com/apisupplier/json_data_product_outofstock.php?memberId=$memberId&searchKey=$searchString&page=$page&sort=$sort';
+    // 'https://ptnpharma.com/apisupplier/json_data_product_outofstock_checkorder.php?memberId=$memberId&searchKey=$searchString&page=$page&sort=$sort';
 
     // if (myIndex != 0) {
     //   url = '${MyStyle().readProductWhereMode}$myIndex';
@@ -503,15 +503,26 @@ class _ListProductState extends State<ListProductOutofstock> {
         ToggleSwitch(
             minWidth: 80.0,
             cornerRadius: 20,
-            activeBgColor: Colors.lightBlue.shade400,
-            activeTextColor: Colors.white,
+            activeBgColor: [Colors.lightBlue.shade400],
+            // activeTextColor: Colors.white,
             inactiveBgColor: Colors.grey.shade500,
-            inactiveTextColor: Colors.white,
+            // inactiveTextColor: Colors.white,
             labels: ['รอสั่งซื้อ', 'กดเมื่อสั่งซื้อ'],
             // icons: [FontAwesomeIcons.check, FontAwesomeIcons.times],
+            customTextStyles: [
+              null,
+              TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w900),
+              TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.0,
+                  fontStyle: FontStyle.italic)
+            ],
             onToggle: (index) async {
               String url =
-                  'http://ptnpharma.com/apisupplier/json_orderitem.php?memberId=$memberId&med_id=$med_id&status=$index';
+                  'https://ptnpharma.com/apisupplier/json_orderitem.php?memberId=$memberId&med_id=$med_id&status=$index';
               http.Response response = await http.get(url);
               print('url OrderItem >>> $url');
             }),
@@ -528,15 +539,26 @@ class _ListProductState extends State<ListProductOutofstock> {
             minWidth: 80.0,
             cornerRadius: 20,
             initialLabelIndex: 1,
-            activeBgColor: Colors.red.shade400,
-            activeTextColor: Colors.white,
+            activeBgColor: [Colors.red.shade400],
+            // activeTextColor: Colors.white,
             inactiveBgColor: Colors.blueGrey.shade500,
-            inactiveTextColor: Colors.white,
+            // inactiveTextColor: Colors.white,
+            customTextStyles: [
+              null,
+              TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w900),
+              TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.0,
+                  fontStyle: FontStyle.italic)
+            ],
             labels: ['ยกเลิก', 'สินค้าค้างส่ง'],
             // icons: [FontAwesomeIcons.check, FontAwesomeIcons.times],
             onToggle: (index) async {
               String url =
-                  'http://ptnpharma.com/apisupplier/json_removeitem.php?memberId=$memberId&med_id=$med_id&status=$index';
+                  'https://ptnpharma.com/apisupplier/json_removeitem.php?memberId=$memberId&med_id=$med_id&status=$index';
               http.Response response = await http.get(url);
               print('url RemoveItem >>> $url');
             }),
@@ -587,7 +609,7 @@ class _ListProductState extends State<ListProductOutofstock> {
           onPressed: () async {
             changeText(index);
             String url =
-                'http://ptnpharma.com/apisupplier/json_removeitem.php?memberId=$memberId&med_id=$med_id';
+                'https://ptnpharma.com/apisupplier/json_removeitem.php?memberId=$memberId&med_id=$med_id';
             // http.Response response = await http.get(url);
             print('url RemoveItem >>> $url');
 
@@ -886,7 +908,7 @@ class _ListProductState extends State<ListProductOutofstock> {
     String memberId = myUserModel.id.toString();
     print(memberId);
     String url =
-        'http://ptnpharma.com/apisupplier/json_loadmycart.php?memberId=$memberId';
+        'https://ptnpharma.com/apisupplier/json_loadmycart.php?memberId=$memberId';
 
     http.Response response = await http.get(url);
     var result = json.decode(response.body);

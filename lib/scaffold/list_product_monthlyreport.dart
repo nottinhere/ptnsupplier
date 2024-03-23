@@ -97,7 +97,7 @@ class _ListProductState extends State<ListProductReport> {
     int memberId = myUserModel.id;
 
     String url =
-        'http://ptnpharma.com/apisupplier/json_product_monthlyreport.php?memberId=$memberId&searchKey=$searchString&page=$page&month=$month&year=$year';
+        'https://ptnpharma.com/apisupplier/json_product_monthlyreport.php?memberId=$memberId&searchKey=$searchString&page=$page&month=$month&year=$year';
 
     // if (myIndex != 0) {
     //   url = '${MyStyle().readProductWhereMode}$myIndex';

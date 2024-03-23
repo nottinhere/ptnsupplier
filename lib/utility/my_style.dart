@@ -50,16 +50,16 @@ class MyStyle {
   String fontName = 'Sarabun';
 
   String readAllProduct =
-      'http://www.ptnpharma.com/apisupplier/json_product.php?top=100';
+      'https://www.ptnpharma.com/apisupplier/json_product.php?top=100';
   String readProductWhereMode =
-      'http://www.ptnpharma.com/apisupplier/json_product.php?searchKey=';
+      'https://www.ptnpharma.com/apisupplier/json_product.php?searchKey=';
   String getUserWhereUserAndPass =
-      'http://www.ptnpharma.com/apisupplier/json_authen.php'; // json_login.php
+      'https://www.ptnpharma.com/apisupplier/json_authen.php'; // json_login.php
   String getProductWhereId =
-      'http://www.ptnpharma.com/apisupplier/json_productdetail.php?id=';
+      'https://www.ptnpharma.com/apisupplier/json_productdetail.php?id=';
 
   String loadMyCart =
-      'http://www.ptnpharma.com/apisupplier/json_loadmycart.php?memberID=';
+      'https://www.ptnpharma.com/apisupplier/json_loadmycart.php?memberID=';
 
   MyStyle();
 }

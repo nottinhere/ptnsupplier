@@ -39,7 +39,7 @@ class _DetailState extends State<DetailNews> {
   }
 
   Future<void> getNewsWhereID() async {
-    String url = 'http://ptnpharma.com/apisupplier/json_supnewsdetail.php';
+    String url = 'https://ptnpharma.com/apisupplier/json_supnewsdetail.php';
     print('urlNews >> $url');
 
     http.Response response = await http.get(url);
@@ -74,7 +74,7 @@ class _DetailState extends State<DetailNews> {
 
   Widget showTitle() {
     return Card(
-          child: Column(
+      child: Column(
         children: <Widget>[
           Text(
             subjectNews,
@@ -86,7 +86,7 @@ class _DetailState extends State<DetailNews> {
           ),
           SizedBox(
             width: 10.0,
-            height:15.0,
+            height: 15.0,
           )
         ],
       ),
@@ -112,12 +112,8 @@ class _DetailState extends State<DetailNews> {
   }
 
   Widget showDetail() {
-
-   
-    
-
     return Card(
-          child: Container(
+      child: Container(
         // decoration: MyStyle().boxLightGreen,
         // height: 35.0,
         width: MediaQuery.of(context).size.width * 0.95,
@@ -125,20 +121,21 @@ class _DetailState extends State<DetailNews> {
         child: Column(
           children: <Widget>[
             SizedBox(
-            width: 10.0,
-            height: 5.0,
-          ),
-          Text(
-            'โพสเมื่อ :' + postdateNews,
-            style: TextStyle(
-              fontSize: 16.0,
-              fontWeight: FontWeight.bold,
-              color: Color.fromARGB(0xff, 0, 0, 0),
+              width: 10.0,
+              height: 5.0,
             ),
-          ),SizedBox(
-            width: 10.0,
-            height: 10.0,
-          ),
+            Text(
+              'โพสเมื่อ :' + postdateNews,
+              style: TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(0xff, 0, 0, 0),
+              ),
+            ),
+            SizedBox(
+              width: 10.0,
+              height: 10.0,
+            ),
             Text(
               detailNews.replaceAll('\\n', '\n'),
               style: TextStyle(

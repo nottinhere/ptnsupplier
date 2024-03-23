@@ -28,6 +28,11 @@ class ProductAllModel {
   int orderStatus;
   String emotical;
   int id;
+  String priceLabel;
+  String priceRetail;
+  String method;
+  String usefor;
+  String fda;
 
   ProductAllModel(
       {this.title,
@@ -58,7 +63,12 @@ class ProductAllModel {
       this.itemSum,
       this.orderStatus,
       this.emotical,
-      this.id});
+      this.id,
+      this.priceLabel,
+      this.priceRetail,
+      this.method,
+      this.usefor,
+      this.fda});
 
   ProductAllModel.fromJson(Map<String, dynamic> json) {
     title = json['title'];
@@ -90,6 +100,11 @@ class ProductAllModel {
     orderStatus = json['orderStatus'];
     emotical = json['emotical'];
     id = json['id'];
+    priceLabel = json['price_label'];
+    priceRetail = json['price_retail'];
+    method = json['method'];
+    usefor = json['usefor'];
+    fda = json['fda'];
   }
 
   Map<String, dynamic> toJson() {
@@ -123,6 +138,11 @@ class ProductAllModel {
     data['orderStatus'] = this.orderStatus;
     data['emotical'] = this.emotical;
     data['id'] = this.id;
+    data['price_label'] = this.priceLabel;
+    data['price_retail'] = this.priceRetail;
+    data['method'] = this.method;
+    data['usefor'] = this.usefor;
+    data['fda'] = this.fda;
     return data;
   }
 }

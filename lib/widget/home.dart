@@ -57,7 +57,7 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> readNews() async {
-    String url = 'http://ptnpharma.com/apisupplier/json_supnewsdetail.php';
+    String url = 'https://ptnpharma.com/apisupplier/json_supnewsdetail.php';
     http.Response response = await http.get(url);
     var result = json.decode(response.body);
     var mapItemNews =
@@ -76,7 +76,7 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> readPromotion() async {
-    String url = 'http://ptnpharma.com/apisupplier/json_promotion.php';
+    String url = 'https://ptnpharma.com/apisupplier/json_promotion.php';
     http.Response response = await http.get(url);
     var result = json.decode(response.body);
     var mapItemProduct =
@@ -800,7 +800,7 @@ class _HomeState extends State<Home> {
                   child: Image.asset('images/icon_report.png'),
                 ),
                 Text(
-                  'สรุปการขาย',
+                  'สรุปยอดรายเดือน',
                   style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -841,6 +841,47 @@ class _HomeState extends State<Home> {
               children: <Widget>[
                 Container(
                   width: 70.0,
+                  child: Image.asset('images/icon_chart.png'),
+                ),
+                Text(
+                  'ชาร์ทเปรียบเทียบ',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+              ],
+            ),
+          ),
+        ),
+        onTap: () {
+          print('You click offer new item');
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => WebViewChart(
+                        userModel: myUserModel,
+                      )));
+        },
+      ),
+    );
+  }
+
+  Widget row4Left() {
+    String login = myUserModel.subject;
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.45,
+      // height: 80.0,
+      child: GestureDetector(
+        child: Card(
+          // color: Colors.green.shade100,
+          child: Container(
+            padding: EdgeInsets.all(16.0),
+            alignment: AlignmentDirectional(0.0, 0.0),
+            child: Column(
+              children: <Widget>[
+                Container(
+                  width: 70.0,
                   child: Image.asset('images/offer.png'),
                 ),
                 Text(
@@ -867,7 +908,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget row4Left() {
+  Widget row4Right() {
     // losesale
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
@@ -946,7 +987,7 @@ class _HomeState extends State<Home> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         row4Left(),
-        // row4Right(),
+        row4Right(),
       ],
     );
   }
@@ -1087,13 +1128,93 @@ class _WebViewState extends State<WebView> {
     String memberId = myUserModel.id.toString();
     String memberCode = myUserModel.code;
     String url =
-        'http://ptnpharma.com/supplier/form_offermed_mobile.php?memberId=$memberId&memberCode=$memberCode'; //
+        'https://ptnpharma.com/supplier/form_offermed_mobile.php?memberId=$memberId&memberCode=$memberCode'; //
     print('URL ==>> $url');
     return WebviewScaffold(
       url: url, //"https://www.androidmonks.com",
       appBar: AppBar(
         backgroundColor: MyStyle().barColor,
         title: Text("ฟอร์มเสนอยาใหม่"),
+      ),
+      withZoom: true,
+      withJavascript: true,
+      withLocalStorage: true,
+      appCacheEnabled: false,
+      ignoreSSLErrors: true,
+    );
+  }
+}
+
+class WebViewChartWidget extends StatefulWidget {
+  WebViewChartWidget({Key key}) : super(key: key);
+
+  @override
+  _WebViewChartWidgetState createState() => _WebViewChartWidgetState();
+}
+
+class _WebViewChartWidgetState extends State {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("Sample WebView Widget"),
+          backgroundColor: MyStyle().bgColor,
+        ),
+        body: Center(
+          child: Column(
+            children: [
+              Container(
+                child: TextButton(
+                    child: Text("Open my Blog"),
+                    onPressed: () {
+                      print("in");
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => WebViewChart()));
+                    }),
+              )
+            ],
+          ),
+        ));
+  }
+}
+
+class WebViewChart extends StatefulWidget {
+  final UserModel userModel;
+
+  WebViewChart({Key key, this.userModel}) : super(key: key);
+
+  @override
+  _WebViewChartState createState() => _WebViewChartState();
+}
+
+class _WebViewChartState extends State<WebViewChart> {
+  UserModel myUserModel;
+
+  @override
+  void initState() {
+    super.initState();
+    myUserModel = widget.userModel;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String memberId = myUserModel.id.toString();
+    String memberCode = myUserModel.code;
+    String url =
+        'https://ptnpharma.com/supplier/pages/tables/salechart_mobile.php?mode=v&id=$memberId'; //
+    print('URL ==>> $url');
+    return WebviewScaffold(
+      url: url, //"https://www.androidmonks.com",
+      appBar: AppBar(
+        backgroundColor: MyStyle().barColor,
+        title: Text("ชาร์ทเปรียบเทียบยอดขาย"),
       ),
       withZoom: true,
       withJavascript: true,
