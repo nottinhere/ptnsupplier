@@ -478,7 +478,7 @@ class _DetailState extends State<Detail> {
       padding: EdgeInsets.only(left: 10.0, right: 20.0),
       child: Column(
         children: <Widget>[
-          Text('ราคาขายส่ง :'),
+          Text('ราคาทุน :'),
           TextFormField(
             style: TextStyle(color: Colors.black),
             initialValue: productAllModel.priceOrder, // set default value
@@ -650,7 +650,7 @@ class _DetailState extends State<Detail> {
                 width: MediaQuery.of(context).size.width * 0.45,
                 child: Column(
                   children: <Widget>[
-                    Text('ราคาทุน'),
+                    Text('ราคาขายส่ง'),
                     Text(
                       productAllModel.priceSale +
                           '/' +
