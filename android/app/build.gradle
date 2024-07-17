@@ -13,16 +13,16 @@ if (flutterRoot == null) {
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '6'
+    flutterVersionCode = '7'
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
-    flutterVersionName = '1.0.6'
+    flutterVersionName = '1.0.7'
 }
 
-    flutterVersionCode = '6'
-    flutterVersionName = '1.0.6'
+    flutterVersionCode = '7'
+    flutterVersionName = '1.0.7'
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
@@ -58,7 +58,7 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
         minSdkVersion 21
-        targetSdkVersion 33//flutter.targetSdkVersion
+        targetSdkVersion 34//flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
