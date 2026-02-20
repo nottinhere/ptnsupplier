@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:ptnsupplier/main.dart';
 import 'package:ptnsupplier/models/user_model.dart';
 import 'package:ptnsupplier/models/popup_model.dart';
 import 'package:ptnsupplier/scaffold/my_service.dart';
@@ -10,6 +11,7 @@ import 'package:ptnsupplier/scaffold/detail_popup.dart';
 import 'package:ptnsupplier/utility/normal_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 
 class Authen extends StatefulWidget {
   @override
@@ -18,16 +20,16 @@ class Authen extends StatefulWidget {
 
 class _AuthenState extends State<Authen> {
   // Explicit
-  String user, password; // default value is null
+  String? user, password; // default value is null
   final formKey = GlobalKey<FormState>();
-  UserModel userModel;
+  UserModel? userModel;
   bool remember = false; // false => unCheck      true = Check
   bool status = true;
 
-  PopupModel popupModel;
-  String subjectPopup = '';
-  String imagePopup = '';
-  String statusPopup = '';
+  PopupModel? popupModel;
+  String? subjectPopup = '';
+  String? imagePopup = '';
+  String? statusPopup = '';
 
   // Method
   @override
@@ -66,9 +68,9 @@ class _AuthenState extends State<Authen> {
             style: TextStyle(color: MyStyle().textColor),
           ),
           value: remember,
-          onChanged: (bool value) {
+          onChanged: (bool? value) {
             setState(() {
-              remember = value;
+              remember = value!;
             });
           },
         ),
@@ -81,18 +83,17 @@ class _AuthenState extends State<Authen> {
     return Container(
       width: 250.0,
       child: ElevatedButton(
-        // shape: RoundedRectangleBorder(
-        //   borderRadius: BorderRadius.circular(12.0),
-        // ),
         style: ElevatedButton.styleFrom(
-          primary: MyStyle().textColor,
+          // primary: MyStyle().textColor,
+            backgroundColor: Colors.blue,
+            textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         child: Text('Login',
             style: TextStyle(
               color: Colors.white,
             )),
         onPressed: () {
-          formKey.currentState.save();
+          formKey.currentState!.save();
           print(
             'user = $user,password = $password',
           );
@@ -123,39 +124,76 @@ class _AuthenState extends State<Authen> {
     );
   }
 
-  Future<void> normalDialogLogin(
+  Future<void> normalDialogLoginFail(
     BuildContext buildContext,
-    String title,
-    String message,
+    String? title,
+    String? message,
   ) async {
-    showDialog(
-      context: buildContext,
-      builder: (BuildContext buildContext) {
-        return AlertDialog(
-          title: showTitle(title),
-          content: Text(message),
-          actions: <Widget>[okButtonLogin(buildContext)],
-        );
+    AwesomeDialog(
+      context: context,
+      headerAnimationLoop: false,
+      dialogType: DialogType.error,
+      // autoHide: const Duration(seconds: 4),
+      title: title,
+      desc: message,
+      btnOkColor: Colors.red,
+      btnOkOnPress: () {
+        debugPrint('OnClcik');
+        MaterialPageRoute materialPageRoute =
+            MaterialPageRoute(builder: (BuildContext buildContext) {
+          return MyApp();
+        });
+        Navigator.of(context).push(materialPageRoute);
+
       },
-    );
+      btnOkIcon: Icons.check_circle,
+    ).show();
+    // showDialog(
+    //   context: buildContext,
+    //   builder: (BuildContext buildContext) {
+    //     return AlertDialog(
+    //       title: showTitle(title),
+    //       content: Text(message),
+    //       actions: <Widget>[okButtonLogin(buildContext)],
+    //     );
+    //   },
+    // );
   }
 
   Future<void> checkAuthen() async {
-    if (user.isEmpty || password.isEmpty) {
+    if (user!.isEmpty || password!.isEmpty) {
       // Have space
-      normalDialog(context, 'Have space', 'Please fill all input');
+      // normalDialog(context, 'Have space', 'Please fill all input');
+      AwesomeDialog(
+        context: context,
+        headerAnimationLoop: false,
+        dialogType: DialogType.warning,
+        autoHide: const Duration(seconds: 5),
+        title: 'ข้อมูลไม่ครบ',
+        desc: 'กรุณากรอกข้อมูลให้ครบ ',
+        // btnCancelOnPress: () {
+        //   debugPrint('OnClcik');
+        // },
+        btnOkText: ('ok'),
+        btnOkColor: const Color.fromARGB(255, 252, 183, 36),
+        btnOkOnPress: () {
+          debugPrint('OnClcik');
+        },
+        btnOkIcon: Icons.check_circle,
+      ).show();
+      
     } else {
-      String urlPop = 'https://ptnpharma.com/apisupplier/json_popup.php';
-      http.Response responsePop = await http.get(urlPop);
+      String? urlPop = 'https://ptnpharma.com/apisupplier/json_popup.php';
+      http.Response responsePop = await http.get(Uri.parse(urlPop));
       var resultPop = json.decode(responsePop.body);
       var mapItemPopup = resultPop[
           'itemsData']; // dynamic    จะส่ง value อะไรก็ได้ รวมถึง null
       for (var map in mapItemPopup) {
         // PromoteModel promoteModel = PromoteModel.fromJson(map);
         PopupModel popupModel = PopupModel.fromJson(map);
-        String urlImage = popupModel.photo;
-        String subject = popupModel.subject;
-        String popstatus = popupModel.popstatus;
+        String? urlImage = popupModel.photo;
+        String? subject = popupModel.subject;
+        String? popstatus = popupModel.popstatus;
         setState(() {
           //promoteModels.add(promoteModel); // push ค่าลง arra
           subjectPopup = subject;
@@ -165,20 +203,27 @@ class _AuthenState extends State<Authen> {
       }
 
       // No space
-      String url =
+      String? url =
           '${MyStyle().getUserWhereUserAndPass}?username=$user&password=$password';
       print('url = $url');
 
       http.Response response = await http
-          .get(url); // await จะต้องทำงานใน await จะเสร็จจึงจะไปทำ process ต่อไป
+          .get(Uri.parse(url)); // await จะต้องทำงานใน await จะเสร็จจึงจะไปทำ process ต่อไป
       var result = json.decode(response.body);
 
       int statusInt = result['status'];
       print('statusInt = $statusInt');
 
       if (statusInt == 0) {
-        String message = result['message'];
-        normalDialogLogin(context, 'Login fail..', message);
+        print('User login fail');
+        String? message = result['message'];
+        
+        SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+        await sharedPreferences.clear();
+        await sharedPreferences.remove('user');
+        await sharedPreferences.remove('password');
+
+        normalDialogLoginFail(context, 'Login fail..', message);
       } else if (statusInt == 1) {
         Map<String, dynamic> map = result['data'];
         print('map = $map');
@@ -186,12 +231,13 @@ class _AuthenState extends State<Authen> {
         int userStatus = map['status'];
         print('userStatus = $userStatus');
 
-        // if (userStatus == 0) {
-        //   print('Ban user from admin');
-        //   String message = 'Please contact webmaster';
-        //   // normalDialog(context, 'Login fail..', message);
-        //   // normalDialog(context, 'Login fail', 'Please contact webmaster');
-        // }
+        if (userStatus == 0) {
+          print('Ban user from admin');
+          String? message = 'Please contact webmaster';
+          normalDialogLoginFail(context, 'Login fail..', message);
+          // normalDialog(context, 'Login fail..', message);
+          // normalDialog(context, 'Login fail', 'Please contact webmaster');
+        }
 
         userModel = UserModel.fromJson(map);
         if (remember) {
@@ -266,8 +312,8 @@ class _AuthenState extends State<Authen> {
 
   Future<void> saveSharePreference() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setString('User', user);
-    sharedPreferences.setString('Password', password);
+    sharedPreferences.setString('User', user!);
+    sharedPreferences.setString('Password', password!);
 
     routeToMyService(statusPopup);
   }
@@ -290,23 +336,56 @@ class _AuthenState extends State<Authen> {
     // print('statusPopup >> $statusPopup');
     if (statusPopup == '1') {
       // when turn on popup alert
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) => _onBasicAlertPressed(context));
+      // WidgetsBinding.instance
+      //     .addPostFrameCallback((_) => _onBasicAlertPressed(context));
+      normalDialogPopup(context, 'ประกาศ !! ', subjectPopup!);
+
     } else {
       gotoService();
     }
   }
 
+    Future<void> normalDialogPopup(
+    BuildContext buildContext,
+    String title,
+    String message,
+  ) async {
+    AwesomeDialog(
+      context: context,
+      headerAnimationLoop: false,
+      dialogType: DialogType.info,
+      // autoHide: const Duration(seconds: 4),
+      title: title,
+      desc: message,
+      btnOkColor: Colors.blue,
+      // btnOkIcon: Icons.check_circle,
+      btnOkText : 'รายละเอียด',
+      btnOkOnPress: () {
+        debugPrint('OnClcik');
+        gotoPopupdetail();
+      },
+
+      btnCancelColor: Colors.green,
+      // btnCancelIcon: Icons.check_circle,
+      btnCancelText : 'หน้าหลัก',
+      btnCancelOnPress: () {
+        gotoService();
+      },
+      dismissOnTouchOutside : false,
+    ).show();
+  }
+
+
   Widget userForm() {
     return Container(
       decoration: MyStyle().boxLightGray,
-      height: 35.0,
+      height: 45.0,
       width: 250.0,
       child: TextFormField(
         style: TextStyle(color: Colors.grey[800]),
         // initialValue: 'nott', // set default value
-        onSaved: (String string) {
-          user = string.trim();
+        onSaved: (String? string) {
+          user = string!.trim();
         },
         decoration: InputDecoration(
           contentPadding: EdgeInsets.only(
@@ -330,13 +409,13 @@ class _AuthenState extends State<Authen> {
   Widget passwordForm() {
     return Container(
       decoration: MyStyle().boxLightGray,
-      height: 35.0,
+      height: 45.0,
       width: 250.0,
       child: TextFormField(
         style: TextStyle(color: Colors.grey[800]),
         // initialValue: '909090', // set default value
-        onSaved: (String string) {
-          password = string.trim();
+        onSaved: (String? string) {
+          password = string!.trim();
         },
         obscureText: true, // hide text key replace with
         decoration: InputDecoration(

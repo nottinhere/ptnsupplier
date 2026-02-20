@@ -14,7 +14,7 @@ description: A new Flutter project.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: '>=3.2.5 <4.0.0'
 
 dependencies:
   flutter:
@@ -22,20 +22,36 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^0.1.2
-  http: ^0.12.0+2
-  carousel_slider: ^1.3.1
+  http: ^1.4.0
+  cupertino_icons: ^1.0.8
+  carousel_slider: ^5.0.0
+  shared_preferences: ^2.5.1
+  toggle_switch: ^2.3.0
+  intl: ^0.20.2
+  date_time_format: ^2.0.1
+  rflutter_alert: ^2.0.7   #request to change
+  loader_overlay: ^5.0.0
+  loading_animation_widget: ^1.3.0
+  image: ^4.5.4
+  image_picker: ^1.1.2
+  webview_flutter: ^4.13.0
+  font_awesome_flutter: ^10.8.0
+  file_picker: ^10.2.0
+  path_provider: ^2.1.5
+  syncfusion_flutter_datepicker: ^32.1.22
+  flutter_date_range_picker: ^0.2.1
+  flutter_picker_plus: ^1.5.2
+  awesome_dialog: ^3.2.1
+
+
+
+  # loading: ^1.0.2
+  loadmore: ^2.0.1
+
+
+  # flutter_webview_plugin: ^0.4.0
   # barcode_scan: ^1.0.0
-  shared_preferences: ^0.5.4+6
-  flare_checkbox: ^1.0.3
-  toggle_switch: ^2.1.0
-  intl: ^0.15.8
-  date_time_format: ^1.0.0+4
-  rflutter_alert: ^1.1.0
-  loading: ^1.0.2
-  loadmore: ^1.0.4
-  flutter_webview_plugin: ^0.4.0
-  
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -68,6 +84,7 @@ flutter:
     - images/3-ok.png
     - images/4-smile.png
     - images/icon_googlemap.jpg
+    - images/icon_dealspacialprice.png
     - images/
   #  - images/a_dot_ham.jpeg
 

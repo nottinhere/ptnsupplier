@@ -1,0 +1,2 @@
+D:/ftproject/ptncenter/android/app/.cxx/RelWithDebInfo/6n10j2d3/x86/CMakeFiles/edit_cache.dir
+D:/ftproject/ptncenter/android/app/.cxx/RelWithDebInfo/6n10j2d3/x86/CMakeFiles/rebuild_cache.dir

@@ -9,13 +9,24 @@ import 'package:ptnsupplier/models/user_model.dart';
 import 'package:ptnsupplier/scaffold/detail_cart.dart';
 import 'package:ptnsupplier/utility/my_style.dart';
 import 'package:ptnsupplier/utility/normal_dialog.dart';
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+import 'package:ptnsupplier/scaffold/my_service.dart';
+
+// import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+
+import 'package:image/image.dart' as image;
+import 'package:image_picker/image_picker.dart' as image_picker;
+import 'package:webview_flutter_android/webview_flutter_android.dart' as webview_flutter_android;
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
+
 
 class Detail extends StatefulWidget {
-  final ProductAllModel productAllModel;
-  final UserModel userModel;
+  final ProductAllModel? productAllModel;
+  final UserModel? userModel;
 
-  Detail({Key key, this.productAllModel, this.userModel}) : super(key: key);
+  Detail({Key? key, this.productAllModel, this.userModel}) : super(key: key);
 
   @override
   _DetailState createState() => _DetailState();
@@ -23,22 +34,26 @@ class Detail extends StatefulWidget {
 
 class _DetailState extends State<Detail> {
   // Explicit
-  ProductAllModel currentProductAllModel;
-  ProductAllModel productAllModel;
+  ProductAllModel? currentProductAllModel;
+  ProductAllModel? productAllModel;
   int amontCart = 0;
-  UserModel myUserModel;
-  String id; // productID
+  UserModel? myUserModel;
+  String? id; // productID
 
-  String txtdeal = '',
+  String? txtdeal = '',
       txtfree = '',
       txtprice = '',
       txtpricelabel = '',
       txtpriceretail = '',
       txtnote = '',
+      txtdetail = '',
       txtusefor = '',
       txtmethod = '',
       txtfda = '';
-  String memberID;
+  String? memberID;
+
+  late final WebViewController controller;
+
 
   // Method
   @override
@@ -48,16 +63,63 @@ class _DetailState extends State<Detail> {
     myUserModel = widget.userModel;
     setState(() {
       getProductWhereID();
-      readCart();
+      // readCart();
     });
+  controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
+      ..loadRequest(
+        Uri.parse(
+          'https://your-url.com',
+        ),
+      );
+    addFilesController(controller);
+    
+  }
+
+  Future<void> addFilesController(WebViewController controllerV) async {
+    if (Platform.isAndroid) {
+      var controller = (controllerV.platform
+          as webview_flutter_android.AndroidWebViewController);
+      await controller.setOnShowFileSelector(_androidFilePicker);
+    }
+  }
+  
+   Future<List<String>> _androidFilePicker(
+    webview_flutter_android.FileSelectorParams params,
+  ) async {
+    if (params.acceptTypes.any((type) => type == 'image/*')) {
+      var picker = image_picker.ImagePicker();
+      var photo =
+          await picker.pickImage(source: image_picker.ImageSource.gallery);
+
+      if (photo == null) {
+        return [];
+      }
+
+      var imageData = await photo.readAsBytes();
+      var decodedImage = image.decodeImage(imageData)!;
+      var scaledImage = image.copyResize(decodedImage, width: 500);
+      var jpg = image.encodeJpg(scaledImage, quality: 90);
+
+      var filePath = (await getTemporaryDirectory()).uri.resolve(
+            './image_${DateTime.now().microsecondsSinceEpoch}.jpg',
+          );
+      var file = await File.fromUri(filePath).create(recursive: true);
+      await file.writeAsBytes(jpg, flush: true);
+
+      return [file.uri.toString()];
+    }
+
+    return [];
   }
 
   Future<void> getProductWhereID() async {
     if (currentProductAllModel != null) {
-      id = currentProductAllModel.id.toString();
+      id = currentProductAllModel!.id.toString();
       String url = '${MyStyle().getProductWhereId}$id';
       print('url = $url');
-      http.Response response = await http.get(url);
+      http.Response response = await http.get(Uri.parse(url));
       var result = json.decode(response.body);
       print('result = $result');
 
@@ -67,8 +129,7 @@ class _DetailState extends State<Detail> {
 
         setState(() {
           productAllModel = ProductAllModel.fromJson(map);
-
-          Map<String, dynamic> priceListMap = map['price_list'];
+          // Map<String, dynamic> priceListMap = map['price_list'];
         });
       } // for
     }
@@ -242,7 +303,7 @@ class _DetailState extends State<Detail> {
             child: Column(
               children: <Widget>[
                 Text(
-                  productAllModel.itemStatusText,
+                  productAllModel!.itemStatusText!,
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
@@ -270,15 +331,15 @@ class _DetailState extends State<Detail> {
           width: 5.0,
           height: 8.0,
         ),
-        // productAllModel.itemStatus == 0 ? cancelTag() : Container(),
-        productAllModel.itemStatus != 1 ? cancelTag() : Container(),
-        (productAllModel.promotion == 1 && productAllModel.itemStatus == 1)
+        // productAllModel!.itemStatus == 0 ? cancelTag() : Container(),
+        productAllModel!.itemStatus != 1 ? cancelTag() : Container(),
+        (productAllModel!.promotion == 1 && productAllModel!.itemStatus == 1)
             ? promotionTag()
             : Container(),
-        (productAllModel.newproduct == 1 && productAllModel.itemStatus == 1)
+        (productAllModel!.newproduct == 1 && productAllModel!.itemStatus == 1)
             ? newproductTag()
             : Container(),
-        (productAllModel.updateprice == 1 && productAllModel.itemStatus == 1)
+        (productAllModel!.updateprice == 1 && productAllModel!.itemStatus == 1)
             ? updatepriceTag()
             : Container(),
         SizedBox(
@@ -289,14 +350,34 @@ class _DetailState extends State<Detail> {
     );
   }
 
+  Widget showHilight() {
+    return Row(
+      children: <Widget>[
+        Container(
+          width: MediaQuery.of(context).size.width * 0.7 - 10,
+          child: Text(
+            productAllModel!.hilight!,
+            style: MyStyle().h3StyleRed,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget showTitle() {
-    return Text(
-      productAllModel.title,
-      style: TextStyle(
-        fontSize: 19.0,
-        fontWeight: FontWeight.bold,
-        color: Color.fromARGB(0xff, 56, 80, 82),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          productAllModel!.title!,
+          style: TextStyle(
+            fontSize: 18.0,
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(0xff, 56, 80, 82),
+          ),
+        ),
+        (productAllModel!.hilight != '') ? showHilight() : Container(),
+      ],
     );
   }
 
@@ -311,7 +392,7 @@ class _DetailState extends State<Detail> {
             Column(
               children: <Widget>[
                 Text(
-                  'Code :' + productAllModel.productCode,
+                  'Code :' + productAllModel!.productCode!,
                   style: TextStyle(
                     fontSize: 26.0,
                     fontWeight: FontWeight.bold,
@@ -331,7 +412,7 @@ class _DetailState extends State<Detail> {
                   ),
                 ),
                 Text(
-                  productAllModel.percentStock + '%',
+                  productAllModel!.percentStock! + '%',
                   style: TextStyle(
                     fontSize: 16.0,
                     fontWeight: FontWeight.bold,
@@ -341,7 +422,7 @@ class _DetailState extends State<Detail> {
               ],
             ),
             Image.network(
-              productAllModel.emotical,
+              productAllModel!.emotical!,
               width: MediaQuery.of(context).size.width * 0.16,
             ),
           ],
@@ -363,9 +444,9 @@ class _DetailState extends State<Detail> {
                 // Icon(Icons.restaurant, color: Colors.green[500]),
                 Text('ขาย/เดือน'),
                 Text(
-                  productAllModel.cMin,
+                  productAllModel!.cMin!,
                   style: TextStyle(
-                    fontSize: 19.0,
+                    fontSize: 18.0,
                     fontWeight: FontWeight.bold,
                     color: Color.fromARGB(0xff, 0, 0, 0),
                   ),
@@ -377,9 +458,9 @@ class _DetailState extends State<Detail> {
                 // Icon(Icons.timer, color: Colors.green[500]),
                 Text('สต๊อก'),
                 Text(
-                  productAllModel.sumStock,
+                  productAllModel!.sumStock!,
                   style: TextStyle(
-                    fontSize: 19.0,
+                    fontSize: 18.0,
                     fontWeight: FontWeight.bold,
                     color: Color.fromARGB(0xff, 0, 0, 0),
                   ),
@@ -391,9 +472,9 @@ class _DetailState extends State<Detail> {
                 // Icon(Icons.kitchen, color: Colors.green[500]),
                 Text('หน่วย'),
                 Text(
-                  productAllModel.unitOrderShow,
+                  productAllModel!.unitOrderShow!,
                   style: TextStyle(
-                    fontSize: 19.0,
+                    fontSize: 18.0,
                     fontWeight: FontWeight.bold,
                     color: Color.fromARGB(0xff, 0, 0, 0),
                   ),
@@ -411,14 +492,14 @@ class _DetailState extends State<Detail> {
       // decoration: MyStyle().boxLightGreen,
       // height: 35.0,
       width: MediaQuery.of(context).size.width * 0.45,
-      padding: EdgeInsets.only(left: 10.0, right: 20.0),
+      padding: EdgeInsets.only(left: 10.0, right: 10.0),
       child: Column(
         children: <Widget>[
-          Text('ดีล :'),
+          Text('จำนวนสั่ง'),
           TextFormField(
             style: TextStyle(color: Colors.black),
             initialValue:
-                productAllModel.dealOrder.toString(), // set default value
+                productAllModel!.dealOrder.toString(), // set default value
             keyboardType: TextInputType.number,
             onChanged: (string) {
               txtdeal = string.trim();
@@ -429,7 +510,7 @@ class _DetailState extends State<Detail> {
               ),
               prefixIcon: Icon(Icons.mode_edit, color: Colors.grey),
               //border: InputBorder.none,
-              hintText: 'ดีล',
+              hintText: 'จำนวนสั่ง',
               hintStyle: TextStyle(color: Colors.grey),
             ),
           ),
@@ -442,15 +523,15 @@ class _DetailState extends State<Detail> {
     return Container(
       // decoration: MyStyle().boxLightGreen,
       // height: 35.0,
-      width: MediaQuery.of(context).size.width * 0.45,
-      padding: EdgeInsets.only(left: 20.0, right: 10.0),
+      width: MediaQuery.of(context).size.width * 0.40,
+      padding: EdgeInsets.only(left: 10.0, right: 10.0),
       child: Column(
         children: <Widget>[
-          Text('แถม :'),
+          Text('แถม'),
           TextFormField(
             style: TextStyle(color: Colors.black),
             initialValue:
-                productAllModel.freeOrder.toString(), // set default value
+                productAllModel!.freeOrder.toString(), // set default value
             keyboardType: TextInputType.number,
             onChanged: (string) {
               txtfree = string.trim();
@@ -475,13 +556,13 @@ class _DetailState extends State<Detail> {
       // decoration: MyStyle().boxLightGreen,
       // height: 35.0,
       width: MediaQuery.of(context).size.width * 0.45,
-      padding: EdgeInsets.only(left: 10.0, right: 20.0),
+      padding: EdgeInsets.only(left: 10.0, right: 10.0),
       child: Column(
         children: <Widget>[
-          Text('ราคาทุน :'),
+          Text('ราคาทุน'),
           TextFormField(
             style: TextStyle(color: Colors.black),
-            initialValue: productAllModel.priceOrder, // set default value
+            initialValue: productAllModel!.priceOrder, // set default value
             // keyboardType: TextInputType.number,
             keyboardType:
                 TextInputType.numberWithOptions(signed: true, decimal: true),
@@ -512,10 +593,10 @@ class _DetailState extends State<Detail> {
       padding: EdgeInsets.only(left: 10.0, right: 20.0),
       child: Column(
         children: <Widget>[
-          Text('ราคาป้าย :'),
+          Text('ราคาป้าย'),
           TextFormField(
             style: TextStyle(color: Colors.black),
-            initialValue: productAllModel.priceLabel, // set default value
+            initialValue: productAllModel!.priceLabel, // set default value
             keyboardType: TextInputType.number,
             onChanged: (string) {
               txtpricelabel = string.trim();
@@ -543,10 +624,10 @@ class _DetailState extends State<Detail> {
       padding: EdgeInsets.only(left: 10.0, right: 20.0),
       child: Column(
         children: <Widget>[
-          Text('ราคาแนะนำขายปลีก :'),
+          Text('ราคาแนะนำขายปลีก'),
           TextFormField(
             style: TextStyle(color: Colors.black),
-            initialValue: productAllModel.priceRetail, // set default value
+            initialValue: productAllModel!.priceRetail, // set default value
             keyboardType: TextInputType.number,
             onChanged: (string) {
               txtpriceretail = string.trim();
@@ -577,7 +658,7 @@ class _DetailState extends State<Detail> {
         maxLines: 2,
         decoration: InputDecoration(
             prefixIcon: Icon(Icons.mode_edit, color: Colors.grey),
-            labelText: 'Note :'),
+            labelText: 'Note'),
       ),
     );
   }
@@ -589,12 +670,12 @@ class _DetailState extends State<Detail> {
         onChanged: (value) {
           txtfda = value.trim();
         },
-        initialValue: productAllModel.fda, // set default value
+        initialValue: productAllModel!.fda, // set default value
         keyboardType: TextInputType.multiline,
         maxLines: 2,
         decoration: InputDecoration(
             prefixIcon: Icon(Icons.mode_edit, color: Colors.grey),
-            labelText: 'เลขทะเบียน อ.ย. :'),
+            labelText: 'เลขทะเบียน อ.ย. '),
       ),
     );
   }
@@ -606,12 +687,12 @@ class _DetailState extends State<Detail> {
         onChanged: (value) {
           txtusefor = value.trim();
         },
-        initialValue: productAllModel.usefor, // set default value
+        initialValue: productAllModel!.usefor, // set default value
         keyboardType: TextInputType.multiline,
         maxLines: 2,
         decoration: InputDecoration(
             prefixIcon: Icon(Icons.mode_edit, color: Colors.grey),
-            labelText: 'ใช้เพื่อ :'),
+            labelText: 'ใช้รักษา'),
       ),
     );
   }
@@ -623,12 +704,29 @@ class _DetailState extends State<Detail> {
         onChanged: (value) {
           txtmethod = value.trim();
         },
-        initialValue: productAllModel.method, // set default value
+        initialValue: productAllModel!.method, // set default value
         keyboardType: TextInputType.multiline,
         maxLines: 2,
         decoration: InputDecoration(
             prefixIcon: Icon(Icons.mode_edit, color: Colors.grey),
-            labelText: 'วิธีการใช้ :'),
+            labelText: 'วิธีการใช้'),
+      ),
+    );
+  }
+
+  Widget detailBox() {
+    return Container(
+      margin: EdgeInsets.only(left: 10.0, right: 10.0),
+      child: TextFormField(
+        onChanged: (value) {
+          txtdetail = value.trim();
+        },
+        initialValue: productAllModel!.detail, // set default value
+        keyboardType: TextInputType.multiline,
+        maxLines: 4,
+        decoration: InputDecoration(
+            prefixIcon: Icon(Icons.mode_edit, color: Colors.grey),
+            labelText: 'รายละเอียด'),
       ),
     );
   }
@@ -637,35 +735,57 @@ class _DetailState extends State<Detail> {
     return Card(
       child: Column(
         children: <Widget>[
-          Row(
-            children: <Widget>[
-              dealBox(),
-              freeBox(),
-            ],
-          ),
-          Row(
-            children: <Widget>[
-              priceBox(),
-              Container(
-                width: MediaQuery.of(context).size.width * 0.45,
-                child: Column(
+          Card(
+            color: Color.fromRGBO(230, 254, 255, 1),
+            shape: RoundedRectangleBorder(
+              side: BorderSide(
+                color: Color.fromRGBO(37, 241, 247, 1),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'รายการสั่งซื้อจากตารางสั่งซื้อ',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromARGB(0xff, 0, 0, 0),
+                  ),
+                ),
+                Row(
                   children: <Widget>[
-                    Text('ราคาขายส่ง'),
-                    Text(
-                      productAllModel.priceSale +
-                          '/' +
-                          productAllModel.unitOrderShow,
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        color: Color.fromARGB(0xff, 0, 0, 0),
+                    dealBox(),
+                    freeBox(),
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    priceBox(),
+                    Container(
+                      width: MediaQuery.of(context).size.width * 0.40,
+                      child: Column(
+                        children: <Widget>[
+                          Text('ราคาขายส่ง'),
+                          Text(
+                            productAllModel!.priceSale! +
+                                '/' +
+                                productAllModel!.unitOrderShow!,
+                            style: TextStyle(
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.bold,
+                              color: Color.fromARGB(0xff, 0, 0, 0),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+
           Row(
             children: <Widget>[
               pricelabelBox(),
@@ -674,6 +794,7 @@ class _DetailState extends State<Detail> {
           ),
           useforBox(),
           methodBox(),
+          detailBox(),
           fdaBox(),
           noteBox(),
           //  Row(children: <Widget>[priceBox(),priceBox(),],),
@@ -685,7 +806,7 @@ class _DetailState extends State<Detail> {
 
   Future<void> submitThread() async {
     // try {
-    var medID = currentProductAllModel.id;
+    var medID = currentProductAllModel!.id;
     // String url =
     //     'https://ptnpharma.com/apisupplier/json_submit_deal.php?memberId=$memberID&medId=$medID&deal_order=$txtdeal&free_order=$txtfree&price_order=$txtprice&price_label=$txtpricelabel&price_retail=$txtpriceretail'; // &note=$txtnote&method=$txtmethod&usefor=$txtusefor&fda=$txtfda;
 
@@ -708,6 +829,7 @@ class _DetailState extends State<Detail> {
       'price_label': txtpricelabel,
       'price_retail': txtpriceretail,
       'note': txtnote,
+      'detail': txtdetail,
       'method': txtmethod,
       'usefor': txtusefor,
       'fda': txtfda
@@ -748,12 +870,19 @@ class _DetailState extends State<Detail> {
           margin: EdgeInsets.only(right: 30.0),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              primary: Color.fromARGB(0xff, 13, 163, 93),
+            backgroundColor: Colors.blue,
+            textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             // color: Color.fromARGB(0xff, 13, 163, 93),
             onPressed: () {
-              memberID = myUserModel.id.toString();
-              var medID = currentProductAllModel.id;
+              memberID = myUserModel!.id.toString();
+              var medID = currentProductAllModel!.id;
+
+              txtdeal = txtdeal!.replaceAll(',', '');
+              txtfree = txtfree!.replaceAll(',', '');
+              txtprice = txtprice!.replaceAll(',', '');
+              txtpricelabel = txtpricelabel!.replaceAll(',', '');
+              txtpriceretail = txtpriceretail!.replaceAll(',', '');
               print(
                   'memberId=$memberID&medId=$medID&deal_order=$txtdeal&free_order=$txtfree&price_order=$txtprice&note=$txtnote');
 
@@ -773,43 +902,56 @@ class _DetailState extends State<Detail> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.5 - 50,
       child: Image.network(
-        productAllModel.photo,
+        productAllModel!.photo!,
         fit: BoxFit.contain,
       ),
     );
   }
 
   Widget buttonMoreData() {
+    
     return Center(
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           ElevatedButton(
             onPressed: () {
-              Navigator.push(
+               print('Webview > ' +currentProductAllModel!.title!);
+             Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => WebView(
-                            productAllModel: currentProductAllModel,
-                            userModel: myUserModel,
-                          )));
+                      builder: (context) => WebViewExample(
+                        userModel: myUserModel!,
+                        productAllModel : currentProductAllModel,
+                        webPage: 'Webview',
+                      )));
             },
-            child: Text('จัดการรูปและลิงก์', style: TextStyle(fontSize: 16)),
+            child: Text('จัดการรูปและลิงก์', style: TextStyle(fontSize: 16,color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10.00, right: 10.00),
           ),
           ElevatedButton(
             onPressed: () {
+              print('WebPreview > ' +currentProductAllModel!.title!);
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => WebPreView(
-                            productAllModel: currentProductAllModel,
-                            userModel: myUserModel,
-                          )));
+                       builder: (context) => WebViewExample(
+                        userModel: myUserModel!,
+                        productAllModel : currentProductAllModel,
+                       webPage: 'WebPreview',
+                      )));
             },
-            child: const Text('ดูตัวอย่าง', style: TextStyle(fontSize: 16)),
+            child: const Text('ดูตัวอย่าง', style: TextStyle(fontSize: 16,color: Colors.white)),
+             style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -817,7 +959,7 @@ class _DetailState extends State<Detail> {
   }
 
   Widget showPackage(int index) {
-    return Text(productAllModel.unitOrderShow);
+    return Text(productAllModel!.unitOrderShow!);
   }
 
   Widget showChoosePricePackage(int index) {
@@ -852,67 +994,52 @@ class _DetailState extends State<Detail> {
     );
   }
 
-  Future<void> readCart() async {
-    amontCart = 0;
-    String memberId = myUserModel.id.toString();
-    String url =
-        'https://ptnsupplier.com/api/json_loadmycart.php?memberId=$memberId';
-
-    http.Response response = await http.get(url);
-    var result = json.decode(response.body);
-    var cartList = result['cart'];
-
-    for (var map in cartList) {
-      setState(() {
-        amontCart++;
-      });
-    }
-  }
-
-  Widget showCart() {
-    return GestureDetector(
-      onTap: () {
-        routeToDetailCart();
-      },
-      child: Container(
-        margin: EdgeInsets.only(top: 5.0, right: 5.0),
-        width: 32.0,
-        height: 32.0,
-        child: Stack(
-          children: <Widget>[
-            Image.asset('images/shopping_cart.png'),
-            Text(
-              '$amontCart',
-              style: TextStyle(
-                backgroundColor: Colors.blue.shade600,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+  Widget showHome() {
+    return Row(
+      children: [
+        TextButton(
+          style: TextButton.styleFrom(
+            backgroundColor: Color.fromARGB(255, 135, 135, 135),
+            shape: CircleBorder(),
+          ),
+          child: Icon(
+            Icons.home,
+            color: Colors.white,
+            size: 25.0,
+          ),
+          onPressed: () {
+            routeToHome();
+          },
         ),
-      ),
+      ],
     );
   }
 
-  void routeToDetailCart() {
+  void routeToHome() {
     MaterialPageRoute materialPageRoute =
         MaterialPageRoute(builder: (BuildContext buildContext) {
-      return DetailCart(
+      return MyService(
         userModel: myUserModel,
       );
     });
-    Navigator.of(context).push(materialPageRoute);
+
+    Navigator.of(context).pushAndRemoveUntil(
+        materialPageRoute, // pushAndRemoveUntil  clear หน้าก่อนหน้า route with out airrow back
+        (Route<dynamic> route) {
+      return false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
-          //showCart(),
+          showHome(),
         ],
-        backgroundColor: MyStyle().barColor,
+        backgroundColor: Colors.lightBlue,
+        foregroundColor: Colors.white,
         title: Text('แก้ไขข้อมูลสต๊อก'),
       ),
       body: productAllModel == null ? showProgress() : showDetailList(),
@@ -925,67 +1052,67 @@ class _DetailState extends State<Detail> {
     );
   }
 
-  Widget addButton() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.lightGreen,
-                ),
-                // color: Colors.lightGreen,
-                child: Text(
-                  'Update deal',
-                  style: TextStyle(
-                      color: Colors.black, fontWeight: FontWeight.bold),
-                ),
-                onPressed: () {
-                  String productID = id;
-                  String memberID = myUserModel.id.toString();
+  // Widget addButton() {
+  //   return Column(
+  //     mainAxisAlignment: MainAxisAlignment.end,
+  //     children: <Widget>[
+  //       Row(
+  //         children: <Widget>[
+  //           Expanded(
+  //             child: ElevatedButton(
+  //               style: ElevatedButton.styleFrom(
+  //                 primary: Colors.lightGreen,
+  //               ),
+  //               // color: Colors.lightGreen,
+  //               child: Text(
+  //                 'Update deal',
+  //                 style: TextStyle(
+  //                     color: Colors.black, fontWeight: FontWeight.bold),
+  //               ),
+  //               onPressed: () {
+  //                 String productID = id;
+  //                 String memberID = myUserModel!.id.toString();
 
-                  int index = 0;
-                  List<bool> status = List();
+  //                 int index = 0;
+  //                 List<bool> status = [];
 
-                  bool sumStatus = true;
-                  if (status.length == 1) {
-                    sumStatus = status[0];
-                  } else {
-                    sumStatus = status[0] && status[1];
-                  }
+  //                 bool sumStatus = true;
+  //                 if (status.length == 1) {
+  //                   sumStatus = status[0];
+  //                 } else {
+  //                   sumStatus = status[0] && status[1];
+  //                 }
 
-                  if (sumStatus) {
-                    normalDialog(
-                        context, 'Do not choose item', 'Please choose item');
-                  } else {}
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+  //                 if (sumStatus) {
+  //                   normalDialog(
+  //                       context, 'Do not choose item', 'Please choose item');
+  //                 } else {}
+  //               },
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  Future<void> addCart(
-      String productID, String unitSize, int qTY, String memberID) async {
-    String url =
-        'https://ptnsupplier.com/api/json_savemycart.php?productID=$productID&unitSize=$unitSize&QTY=$qTY&memberID=$memberID';
+  // Future<void> addCart(
+  //     String productID, String unitSize, int qTY, String memberID) async {
+  //   String url =
+  //       'https://ptnsupplier.com/api/json_savemycart.php?productID=$productID&unitSize=$unitSize&QTY=$qTY&memberID=$memberID';
 
-    http.Response response = await http.get(url).then((response) {
-      print('upload ok');
-      readCart();
-      MaterialPageRoute materialPageRoute =
-          MaterialPageRoute(builder: (BuildContext buildContext) {
-        return DetailCart(
-          userModel: myUserModel,
-        );
-      });
-      Navigator.of(context).push(materialPageRoute);
-    });
-  }
+  //   http.Response response = await http.get(url).then((response) {
+  //     print('upload ok');
+  //     readCart();
+  //     MaterialPageRoute materialPageRoute =
+  //         MaterialPageRoute(builder: (BuildContext buildContext) {
+  //       return DetailCart(
+  //         userModel: myUserModel,
+  //       );
+  //     });
+  //     Navigator.of(context).push(materialPageRoute);
+  //   });
+  // }
 
   Widget showDetailList() {
     return Stack(
@@ -1013,57 +1140,159 @@ class _DetailState extends State<Detail> {
   }
 }
 
-class WebViewWidget extends StatefulWidget {
-  WebViewWidget({Key key}) : super(key: key);
+// class WebViewWidget extends StatefulWidget {
+//   WebViewWidget({Key? key}) : super(key: key);
 
+//   @override
+//   _WebViewWidgetState createState() => _WebViewWidgetState();
+// }
+
+// class _WebViewWidgetState extends State {
+//   @override
+//   void initState() {
+//     super.initState();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//         appBar: AppBar(
+//           title: Text("Sample WebView Widget"),
+//           backgroundColor: MyStyle().bgColor,
+//         ),
+//         body: Center(
+//           child: Column(
+//             children: [
+//               Container(
+//                 child: TextButton(
+//                     child: Text("Open my Blog"),
+//                     onPressed: () {
+//                       print("in");
+//                       Navigator.push(context,
+//                           MaterialPageRoute(builder: (context) => WebViewExample()));
+//                     }),
+//               )
+//             ],
+//           ),
+//         ));
+//   }
+// }
+
+class WebViewExample extends StatefulWidget {
+  final UserModel? userModel;
+  final ProductAllModel? productAllModel;
+  final String? webPage;
+  const WebViewExample({super.key, this.userModel,this.productAllModel,  this.webPage});
   @override
-  _WebViewWidgetState createState() => _WebViewWidgetState();
+  State<WebViewExample> createState() => _WebViewExampleState();
 }
 
-class _WebViewWidgetState extends State {
+class _WebViewExampleState extends State<WebViewExample> {
+  UserModel? myUserModel;
+  ProductAllModel? currentProductAllModel;
+  String? mywebPage;
+  late final WebViewController? controller;
+
   @override
   void initState() {
     super.initState();
+    myUserModel = widget.userModel;
+    currentProductAllModel = widget.productAllModel;
+    mywebPage = widget.webPage;
+
+    String? memberId = myUserModel!.id.toString();
+    String? productId = currentProductAllModel!.id.toString();
+    String? memberCode = myUserModel!.code!;
+    String? webPage = mywebPage.toString();
+
+
+    String? urlView =
+        'https://ptnpharma.com/supplier/pages/blueimp/product_mobile.php?mode=u&sup_id=$memberId&id=$productId'; 
+    String? txtTitle = 'หน้า.....';
+    
+    if (webPage == 'chart') {
+      urlView =
+          'https://ptnpharma.com/supplier/pages/tables/salechart_mobile.php?mode=v&id=$memberId'; //
+      txtTitle = 'ชาร์ทยอดขาย';
+    } else if (webPage == 'Webview') {
+      urlView =
+          'https://ptnpharma.com/supplier/pages/blueimp/product_mobile.php?mode=u&sup_id=$memberId&id=$productId'; //
+      txtTitle = 'ประวัติการสั่งซื้อ';
+    } else if (webPage == 'WebPreview') {
+      urlView =
+          'https://ptnpharma.com/shop/pages/forms/product_preview.php?mode=v&id=$productId&sup_id=$memberId'; //
+      txtTitle = 'รายการของสมนาคุณ ';
+    }
+    print('urlView > $urlView');
+        /*
+     else if (webPage == 'suggestion') {
+      urlView =
+          'https://www.ptnpharma.com/shop/pages/forms/complain_mobile.php?memberId=$memberId&memberCode=$memberCode'; //
+      txtTitle = 'ข้อเสนอแนะ ';
+    } else {
+      urlView =
+          'https://www.ptnpharma.com/shop/pages/forms/complain_mobile.php?memberId=$memberId&memberCode=$memberCode'; //
+      txtTitle = 'แจ้งร้องเรียน';
+    }
+    */
+    // #docregion webview_controller
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            // Update loading bar.
+          },
+          onPageStarted: (String url) {},
+          onPageFinished: (String url) {},
+          onHttpError: (HttpResponseError error) {},
+          onWebResourceError: (WebResourceError error) {},
+          onNavigationRequest: (NavigationRequest request) {
+            if (request.url.startsWith('https://www.youtube.com/')) {
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(urlView));
+    // #enddocregion webview_controller
   }
 
+
+  // #docregion webview_widget
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Sample WebView Widget"),
-          backgroundColor: MyStyle().bgColor,
-        ),
-        body: Center(
-          child: Column(
-            children: [
-              Container(
-                child: TextButton(
-                    child: Text("Open my Blog"),
-                    onPressed: () {
-                      print("in");
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => WebView()));
-                    }),
-              )
-            ],
-          ),
-        ));
+      appBar: AppBar(
+          backgroundColor: Colors.lightBlue,
+          foregroundColor: Colors.white,
+          iconTheme: IconThemeData(color: Colors.white),
+          title:
+              const Text('PTN Pharma', style: TextStyle(color: Colors.white))),
+      body: WebViewWidget(controller: controller!),
+    );
   }
+
+  
+  // #enddocregion webview_widget
 }
 
-class WebView extends StatefulWidget {
-  final ProductAllModel productAllModel;
-  final UserModel userModel;
 
-  WebView({Key key, this.productAllModel, this.userModel}) : super(key: key);
+/*
+class WebView extends StatefulWidget {
+  final ProductAllModel ?productAllModel;
+  final UserModel? userModel;
+
+  WebView({Key? key, this.productAllModel, this.userModel}) : super(key: key);
 
   @override
   _WebViewState createState() => _WebViewState();
 }
 
 class _WebViewState extends State<WebView> {
-  ProductAllModel currentProductAllModel;
-  UserModel myUserModel;
+  ProductAllModel? currentProductAllModel;
+  UserModel? myUserModel;
 
   @override
   void initState() {
@@ -1074,16 +1303,16 @@ class _WebViewState extends State<WebView> {
 
   @override
   Widget build(BuildContext context) {
-    String memberId = myUserModel.id.toString();
-    String productId = currentProductAllModel.id.toString();
-    String memberCode = myUserModel.code;
-    String url =
+    String? memberId = myUserModel!.id.toString();
+    String? productId = currentproductAllModel!.id.toString();
+    String? memberCode = myUserModel!.code!;
+    String? url =
         'https://ptnpharma.com/supplier/pages/blueimp/product_mobile.php?mode=u&sup_id=$memberId&id=$productId'; //
     print('URL ==>> $url');
     return WebviewScaffold(
       url: url, //"https://www.androidmonks.com",
       appBar: AppBar(
-        backgroundColor: MyStyle().barColor,
+        backgroundColor: Colors.lightBlue
         title: Text("จัดการรูปและลิงก์"),
       ),
       withZoom: true,
@@ -1096,7 +1325,7 @@ class _WebViewState extends State<WebView> {
 }
 
 class WebPreViewWidget extends StatefulWidget {
-  WebPreViewWidget({Key key}) : super(key: key);
+  WebPreViewWidget({Key? key}) : super(key: key);
 
   @override
   _WebPreViewWidgetState createState() => _WebPreViewWidgetState();
@@ -1136,18 +1365,18 @@ class _WebPreViewWidgetState extends State {
 }
 
 class WebPreView extends StatefulWidget {
-  final ProductAllModel productAllModel;
-  final UserModel userModel;
+  final ProductAllModel ?productAllModel;
+  final UserModel? userModel;
 
-  WebPreView({Key key, this.productAllModel, this.userModel}) : super(key: key);
+  WebPreView({Key? key, this.productAllModel, this.userModel}) : super(key: key);
 
   @override
   _WebPreViewState createState() => _WebPreViewState();
 }
 
 class _WebPreViewState extends State<WebPreView> {
-  ProductAllModel currentProductAllModel;
-  UserModel myUserModel;
+  ProductAllModel? currentProductAllModel;
+  UserModel? myUserModel;
 
   @override
   void initState() {
@@ -1158,9 +1387,9 @@ class _WebPreViewState extends State<WebPreView> {
 
   @override
   Widget build(BuildContext context) {
-    String memberId = myUserModel.id.toString();
-    String productId = currentProductAllModel.id.toString();
-    String memberCode = myUserModel.code;
+    String memberId = myUserModel!.id.toString();
+    String productId = currentproductAllModel!.id.toString();
+    String memberCode = myUserModel!.code;
     String url =
         'https://ptnpharma.com/shop/pages/forms/product_preview.php?mode=v&id=$productId&sup_id=$memberId'; //
 
@@ -1168,7 +1397,7 @@ class _WebPreViewState extends State<WebPreView> {
     return WebviewScaffold(
       url: url, //"https://www.androidmonks.com",
       appBar: AppBar(
-        backgroundColor: MyStyle().barColor,
+        backgroundColor: Colors.lightBlue
         title: Text("ตัวอย่างมุมมองลูกค้า"),
       ),
       withZoom: true,
@@ -1179,3 +1408,4 @@ class _WebPreViewState extends State<WebPreView> {
     );
   }
 }
+*/

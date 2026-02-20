@@ -10,10 +10,10 @@ import 'package:ptnsupplier/scaffold/list_product.dart';
 import 'my_service.dart';
 
 class DetailPopup extends StatefulWidget {
-  final PopupModel popupModel;
-  final UserModel userModel;
+  final PopupModel? popupModel;
+  final UserModel? userModel;
 
-  DetailPopup({Key key, this.popupModel, this.userModel}) : super(key: key);
+  DetailPopup({Key? key, this.popupModel, this.userModel}) : super(key: key);
 
   @override
   _DetailState createState() => _DetailState();
@@ -21,16 +21,16 @@ class DetailPopup extends StatefulWidget {
 
 class _DetailState extends State<DetailPopup> {
   // Explicit
-  PopupModel currentPopupModel;
-  PopupModel popupModel;
-  UserModel myUserModel;
-  String id; // productID
-  String memberID;
-  String imagePopup = '';
-  String subjectPopup = '';
-  String detailPopup = '';
-  String postdatePopup = '';
-  int currentIndex = 1;
+  PopupModel? currentPopupModel;
+  PopupModel? popupModel;
+  UserModel? myUserModel;
+  String? id; // productID
+  String? memberID;
+  String? imagePopup = '';
+  String? subjectPopup = '';
+  String? detailPopup = '';
+  String? postdatePopup = '';
+  int? currentIndex = 1;
   // Method
   @override
   void initState() {
@@ -43,10 +43,10 @@ class _DetailState extends State<DetailPopup> {
   }
 
   Future<void> getPopupWhereID() async {
-    String url = 'https://ptnpharma.com/apisupplier/json_popupdetail.php';
+    String? url = 'https://ptnpharma.com/apisupplier/json_popupdetail.php';
     print('urlPopup >> $url');
 
-    http.Response response = await http.get(url);
+    http.Response response = await http.get(Uri.parse(url));
     var result = json.decode(response.body);
 
     var mapItemPopup =
@@ -54,10 +54,10 @@ class _DetailState extends State<DetailPopup> {
 
     for (var map in mapItemPopup) {
       PopupModel popupModel = PopupModel.fromJson(map);
-      String urlImage = popupModel.photo;
-      String subject = popupModel.subject;
-      String postdate = popupModel.postdate;
-      String detail = popupModel.detail;
+      String? urlImage = popupModel.photo;
+      String? subject = popupModel.subject;
+      String? postdate = popupModel.postdate;
+      String? detail = popupModel.detail;
       setState(() {
         //promoteModels.add(promoteModel); // push ค่าลง arra
         subjectPopup = subject;
@@ -80,7 +80,7 @@ class _DetailState extends State<DetailPopup> {
       child: Column(
         children: <Widget>[
           Text(
-            subjectPopup,
+            subjectPopup!,
             style: TextStyle(
               fontSize: 22.0,
               fontWeight: FontWeight.bold,
@@ -105,7 +105,7 @@ class _DetailState extends State<DetailPopup> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             Image.network(
-              imagePopup,
+              imagePopup!,
               width: MediaQuery.of(context).size.width * 0.9,
             ),
           ],
@@ -128,7 +128,7 @@ class _DetailState extends State<DetailPopup> {
               height: 5.0,
             ),
             Text(
-              'โพสเมื่อ :' + postdatePopup,
+              'โพสเมื่อ :' + postdatePopup!,
               style: TextStyle(
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
@@ -140,9 +140,9 @@ class _DetailState extends State<DetailPopup> {
               height: 10.0,
             ),
             Text(
-              detailPopup.replaceAll('\\n', '\n'),
+              detailPopup!.replaceAll('\\n', '\n'),
               style: TextStyle(
-                fontSize: 19.0,
+                fontSize: 18.0,
                 // fontWeight: FontWeight.bold,
                 color: Color.fromARGB(0xff, 0, 0, 0),
               ),
@@ -153,7 +153,7 @@ class _DetailState extends State<DetailPopup> {
     );
   }
 
-  void routeToListProduct(int index) {
+  void routeToListProduct(int? index) {
     MaterialPageRoute materialPageRoute =
         MaterialPageRoute(builder: (BuildContext buildContext) {
       return ListProduct(
@@ -164,7 +164,23 @@ class _DetailState extends State<DetailPopup> {
     Navigator.of(context).push(materialPageRoute);
   }
 
-  void changePage(int index) {
+  void gotoService() {
+    MaterialPageRoute materialPageRoute =
+        MaterialPageRoute(builder: (BuildContext buildContext) {
+      return MyService(
+        userModel: myUserModel!,
+      );
+    });
+
+    Navigator.of(context).pushAndRemoveUntil(
+        materialPageRoute, // pushAndRemoveUntil  clear หน้าก่อนหน้า route with out airrow back
+        (Route<dynamic> route) {
+      return false;
+    });
+  }
+
+
+  void changePage(int? index) {
     // selected  >>  BubbleBottomBar
     setState(() {
       currentIndex = index;
@@ -204,20 +220,20 @@ class _DetailState extends State<DetailPopup> {
   Widget gotoHome() {
     // all product
     return Container(
-      width: MediaQuery.of(context).size.width * 0.39,
+      width: MediaQuery.of(context).size.width * 0.30,
       // color: Colors.greenAccent,
       // height: 80.0,
       child: GestureDetector(
         child: Card(
           color: Color.fromARGB(0xff, 0x2c, 0xb5, 0x1b),
           child: Container(
-            padding: EdgeInsets.all(12.0),
+            padding: EdgeInsets.all(6.0),
             alignment: AlignmentDirectional(0.0, 0.0),
             child: Row(
               children: <Widget>[
                 Icon(
                   Icons.home,
-                  size: 24.0,
+                  size: 18.0,
                   color: Colors.white,
                 ),
                 Text(
@@ -269,10 +285,14 @@ class _DetailState extends State<DetailPopup> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(
+          onPressed: () => gotoService(),
+        ),
         actions: <Widget>[
           //showCart(),
         ],
-        backgroundColor: MyStyle().barColor,
+        backgroundColor: Colors.lightBlue,
+        foregroundColor: Colors.white,
         title: Text(''),
       ),
       body: ListView(

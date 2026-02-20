@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:intl/intl.dart';
 
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:ptnsupplier/main.dart';
 import 'package:ptnsupplier/models/product_all_model.dart';
 import 'package:ptnsupplier/models/promote_model.dart';
 import 'package:ptnsupplier/models/user_model.dart';
@@ -17,16 +18,29 @@ import 'package:ptnsupplier/scaffold/list_product_losesale.dart';
 import 'package:ptnsupplier/scaffold/list_product_highdemand.dart';
 import 'package:ptnsupplier/scaffold/list_product_monthlyreport.dart';
 import 'package:ptnsupplier/scaffold/list_product_alert.dart';
+import 'package:ptnsupplier/scaffold/list_deal_spacialprice.dart';
+import 'package:ptnsupplier/scaffold/list_deal_closesale.dart';
+import 'package:ptnsupplier/scaffold/list_deal_raise.dart';
+import 'package:ptnsupplier/scaffold/list_extrapoint_monthlyreport.dart';
+
+
 import 'package:ptnsupplier/scaffold/detail_news.dart';
 import 'package:ptnsupplier/utility/my_style.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+// import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+
+import 'package:image/image.dart' as image;
+import 'package:image_picker/image_picker.dart' as image_picker;
+import 'package:webview_flutter_android/webview_flutter_android.dart' as webview_flutter_android;
+import 'package:flutter_picker_plus/flutter_picker_plus.dart';
 
 class Home extends StatefulWidget {
-  final UserModel userModel;
+  final UserModel? userModel;
 
-  Home({Key key, this.userModel}) : super(key: key);
+  Home({Key? key, this.userModel}) : super(key: key);
 
   @override
   _HomeState createState() => _HomeState();
@@ -34,64 +48,74 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   // Explicit
-  // List<PromoteModel> promoteModels = List();
-  List<Widget> promoteLists = List();
-  List<String> urlImages = List();
-  List<String> urlImagesSuggest = List();
+  // List<PromoteModel> promoteModels = [];
+  List<Widget> promoteLists = [];
+  List<String> urlImages = [];
+  List<String> urlImagesSuggest = [];
 
   int amontCart = 0, banerIndex = 0, suggessIndex = 0, newsIndex = 0;
-  UserModel myUserModel;
-  List<ProductAllModel> promoteModels = List();
+  UserModel? myUserModel;
+  List<ProductAllModel> promoteModels = [];
 
-  NewsModel newsModel;
+  NewsModel? newsModel;
   String imageNews = '';
   String subjectNews = '';
+
+  List<NewsModel>? newsModels = [];
+
+  ScrollController scrollController = ScrollController();
 
   // Method
   @override
   void initState() {
     super.initState();
-    readPromotion();
-    readNews();
+    readListNews();
     myUserModel = widget.userModel;
   }
 
-  Future<void> readNews() async {
-    String url = 'https://ptnpharma.com/apisupplier/json_supnewsdetail.php';
-    http.Response response = await http.get(url);
+  // Future<void> readNews() async {
+  //   String? url = 'https://ptnpharma.com/apisupplier/json_supnewsdetail.php';
+  //   http.Response response = await http.get(Uri.parse(url));
+  //   var result = json.decode(response.body);
+  //   var mapItemNews =
+  //       result['itemsData']; // dynamic    จะส่ง value อะไรก็ได้ รวมถึง null
+  //   for (var map in mapItemNews) {
+  //     // PromoteModel promoteModel = PromoteModel.fromJson(map);
+  //     NewsModel? newsModel = NewsModel.fromJson(map);
+  //     String? urlImage = newsModel.photo;
+  //     String? subject = newsModel.subject;
+  //     setState(() {
+  //       //promoteModels.add(promoteModel); // push ค่าลง arra
+  //       subjectNews = subject!;
+  //       imageNews = urlImage!;
+  //     });
+  //   }
+  // }
+
+  Future<void> readListNews() async {
+    String? url =
+        'https://www.ptnpharma.com/apisupplier/json_supnews.php?limit=7'; // ?memberId=$memberId
+    print('urlNews >> $url');
+
+    http.Response response = await http.get(Uri.parse(url));
     var result = json.decode(response.body);
     var mapItemNews =
         result['itemsData']; // dynamic    จะส่ง value อะไรก็ได้ รวมถึง null
-    for (var map in mapItemNews) {
-      // PromoteModel promoteModel = PromoteModel.fromJson(map);
-      NewsModel newsModel = NewsModel.fromJson(map);
-      String urlImage = newsModel.photo;
-      String subject = newsModel.subject;
-      setState(() {
-        //promoteModels.add(promoteModel); // push ค่าลง arra
-        subjectNews = subject;
-        imageNews = urlImage;
-      });
-    }
-  }
 
-  Future<void> readPromotion() async {
-    String url = 'https://ptnpharma.com/apisupplier/json_promotion.php';
-    http.Response response = await http.get(url);
-    var result = json.decode(response.body);
-    var mapItemProduct =
-        result['itemsProduct']; // dynamic    จะส่ง value อะไรก็ได้ รวมถึง null
-    for (var map in mapItemProduct) {
-      PromoteModel promoteModel = PromoteModel.fromJson(map);
-      ProductAllModel productAllModel = ProductAllModel.fromJson(map);
-      String urlImage = promoteModel.photo;
+    print('mapItemNews >> $mapItemNews');
+
+    for (var map in mapItemNews) {
+      NewsModel? newsModel = NewsModel.fromJson(map);
+      // String? postdate = popupModel!.postdate!;
+      // String? subject = popupModel!.subject!;
       setState(() {
         //promoteModels.add(promoteModel); // push ค่าลง array
-        promoteModels.add(productAllModel);
-        promoteLists.add(showImageNetWork(urlImage));
-        urlImages.add(urlImage);
+        newsModels!.add(newsModel);
+        // subjectList.add(subject);
+        // postdateList.add(postdate);
       });
     }
+    // print('newsModels.length (readNews) >> $newsModels ');
   }
 
   Image showImageNetWork(String urlImage) {
@@ -102,43 +126,7 @@ class _HomeState extends State<Home> {
     return Center(
       child: CircularProgressIndicator(),
     );
-  }
-
-  Widget showCarouseSlider() {
-    return GestureDetector(
-      onTap: () {
-        print('You Click index is $banerIndex');
-
-        MaterialPageRoute route = MaterialPageRoute(
-          builder: (BuildContext context) => Detail(
-              // productAllModel: promoteModels[banerIndex],
-              ),
-        );
-        Navigator.of(context).push(route).then((value) {});
-      },
-      child: CarouselSlider(
-        enlargeCenterPage: true,
-        aspectRatio: 16 / 9,
-        pauseAutoPlayOnTouch: Duration(seconds: 5),
-        autoPlay: true,
-        autoPlayAnimationDuration: Duration(seconds: 5),
-        items: promoteLists,
-        onPageChanged: (int index) {
-          banerIndex = index;
-          // print('index = $index');
-        },
-      ),
-    );
-  }
-
-  Widget promotion() {
-    return Container(
-      padding: EdgeInsets.only(top: 5.0, bottom: 5.0),
-      height: MediaQuery.of(context).size.height * 0.20,
-      child:
-          promoteLists.length == 0 ? myCircularProgress() : showCarouseSlider(),
-    );
-  }
+  } 
 
   void routeToListProduct(int index) {
     MaterialPageRoute materialPageRoute =
@@ -152,8 +140,8 @@ class _HomeState extends State<Home> {
   }
 
   Widget profileBox() {
-    String login = myUserModel.subject;
-    int loginStatus = myUserModel.status;
+    String login = myUserModel!.subject!;
+    int loginStatus = myUserModel!.status!;
 
     return Container(
       width: MediaQuery.of(context).size.width * 0.9,
@@ -190,299 +178,56 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget productBox() {
-    String login = myUserModel.subject;
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      // height: 80.0,
-      child: GestureDetector(
-        child: Card(
-          color: Colors.lightBlue.shade50,
-          child: Container(
-            padding: EdgeInsets.all(16.0),
-            alignment: AlignmentDirectional(0.0, 0.0),
-            child: Row(
-              children: <Widget>[
-                Container(
-                  width: 45.0,
-                  child: Image.asset('images/icon_drugs.png'),
-                  padding: EdgeInsets.all(8.0),
-                ),
-                Text(
-                  'รายการสินค้า',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ],
-            ),
-          ),
-        ),
-        onTap: () {
-          print('You click product');
-          routeToListProduct(0);
-        },
-      ),
-    );
-  }
-
-  Widget outOfStockBox() {
-    String login = myUserModel.subject;
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      // height: 80.0,
-      child: GestureDetector(
-        child: Card(
-          color: Colors.lightBlue.shade50,
-          child: Container(
-            padding: EdgeInsets.all(16.0),
-            alignment: AlignmentDirectional(0.0, 0.0),
-            child: Row(
-              children: <Widget>[
-                Container(
-                  width: 45.0,
-                  child: Image.asset('images/icon_drugs.png'),
-                  padding: EdgeInsets.all(8.0),
-                ),
-                Text(
-                  'ขาดสต๊อก',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ],
-            ),
-          ),
-        ),
-        onTap: () {
-          print('You click out of stock');
-          int index;
-          MaterialPageRoute materialPageRoute =
-              MaterialPageRoute(builder: (BuildContext buildContext) {
-            return ListProductOutofstock(
-              index: index,
-              userModel: myUserModel,
-            );
-          });
-          Navigator.of(context).push(materialPageRoute);
-        },
-      ),
-    );
-  }
-
-  Widget overStockBox() {
-    String login = myUserModel.subject;
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      // height: 80.0,
-      child: GestureDetector(
-        child: Card(
-          color: Colors.lightBlue.shade50,
-          child: Container(
-            padding: EdgeInsets.all(16.0),
-            alignment: AlignmentDirectional(0.0, 0.0),
-            child: Row(
-              children: <Widget>[
-                Container(
-                  width: 45.0,
-                  child: Image.asset('images/icon_drugs.png'),
-                  padding: EdgeInsets.all(8.0),
-                ),
-                Text(
-                  '้นสต๊อก',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ],
-            ),
-          ),
-        ),
-        onTap: () {
-          print('You click over stock');
-          int index;
-          MaterialPageRoute materialPageRoute =
-              MaterialPageRoute(builder: (BuildContext buildContext) {
-            return ListProductOverstock(
-              index: index,
-              userModel: myUserModel,
-            );
-          });
-          Navigator.of(context).push(materialPageRoute);
-        },
-      ),
-    );
-  }
-
-  Widget loseSaleBox() {
-    String login = myUserModel.subject;
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      // height: 80.0,
-      child: GestureDetector(
-        child: Card(
-          color: Colors.lightBlue.shade50,
-          child: Container(
-            padding: EdgeInsets.all(16.0),
-            alignment: AlignmentDirectional(0.0, 0.0),
-            child: Row(
-              children: <Widget>[
-                Container(
-                  width: 45.0,
-                  child: Image.asset('images/icon_drugs.png'),
-                  padding: EdgeInsets.all(8.0),
-                ),
-                Text(
-                  'ไม่เคลื่อนไหว',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ],
-            ),
-          ),
-        ),
-        onTap: () {
-          print('You click over stock');
-          int index;
-          MaterialPageRoute materialPageRoute =
-              MaterialPageRoute(builder: (BuildContext buildContext) {
-            return ListProductLosesale(
-              index: index,
-              userModel: myUserModel,
-            );
-          });
-          Navigator.of(context).push(materialPageRoute);
-        },
-      ),
-    );
-  }
-
-  Widget reportBox() {
-    String login = myUserModel.subject;
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      // height: 80.0,
-      child: GestureDetector(
-        child: Card(
-          color: Colors.lightBlue.shade50,
-          child: Container(
-            padding: EdgeInsets.all(16.0),
-            alignment: AlignmentDirectional(0.0, 0.0),
-            child: Row(
-              children: <Widget>[
-                Container(
-                  width: 45.0,
-                  child: Image.asset('images/icon_drugs.png'),
-                  padding: EdgeInsets.all(8.0),
-                ),
-                Text(
-                  'สรุปการขาย',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ],
-            ),
-          ),
-        ),
-        onTap: () {
-          print('You click monthly report');
-          int index;
-          MaterialPageRoute materialPageRoute =
-              MaterialPageRoute(builder: (BuildContext buildContext) {
-            return ListProductReport(
-              index: index,
-              userModel: myUserModel,
-            );
-          });
-          Navigator.of(context).push(materialPageRoute);
-        },
-      ),
-    );
-  }
-
-  Widget offeritemBox() {
-    String login = myUserModel.subject;
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.8,
-      // height: 80.0,
-      child: GestureDetector(
-        child: Card(
-          color: Colors.greenAccent.shade100,
-          child: Container(
-            padding: EdgeInsets.all(16.0),
-            alignment: AlignmentDirectional(0.0, 0.0),
-            child: Row(
-              children: <Widget>[
-                Container(
-                  width: 45.0,
-                  child: Image.asset('images/offer.png'),
-                  padding: EdgeInsets.all(8.0),
-                ),
-                Text(
-                  'เสนอยาใหม่',
-                  style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ],
-            ),
-          ),
-        ),
-        onTap: () {
-          print('You click product');
-          routeToListProduct(0);
-        },
-      ),
-    );
-  }
-
-  Widget logoutSquareBox() {
-    String login = myUserModel.subject;
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      // height: 80.0,
-      child: GestureDetector(
-        child: Card(
-          color: Colors.lightBlue.shade50,
-          child: Container(
-            padding: EdgeInsets.all(16.0),
-            alignment: AlignmentDirectional(0.0, 0.0),
-            child: Row(
-              children: <Widget>[
-                Container(
-                  width: 45.0,
-                  child: Image.asset('images/icon_logout.png'),
-                  padding: EdgeInsets.all(8.0),
-                ),
-                Text(
-                  'ออกจากระบบ',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ],
-            ),
-          ),
-        ),
-        onTap: () {
-          print('You click square logout');
-          logOut();
-        },
-      ),
-    );
-  }
+  // Widget newsBox() {
+  //   String login = myUserModel!.subject!;
+  //   return Container(
+  //     width: MediaQuery.of(context).size.width * 0.9,
+  //     // height: 80.0,
+  //     child: GestureDetector(
+  //       child: Card(
+  //         // color: Colors.lightBlue.shade50,
+  //         child: Container(
+  //           padding: EdgeInsets.all(16.0),
+  //           alignment: AlignmentDirectional(0.0, 0.0),
+  //           child: Column(
+  //             children: <Widget>[
+  //               Text(
+  //                 subjectNews, // 'ผู้แทน : $login',
+  //                 style: TextStyle(
+  //                     fontSize: 20.0,
+  //                     fontWeight: FontWeight.bold,
+  //                     color: Colors.black),
+  //               ),
+  //               SizedBox(
+  //                 width: 10.0,
+  //                 height: 8.0,
+  //               ),
+  //               Image.network(
+  //                 imageNews,
+  //                 width: MediaQuery.of(context).size.width * 0.9,
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //       onTap: () {
+  //         print('This is News');
+  //         // int? index;
+  //         MaterialPageRoute materialPageRoute =
+  //             MaterialPageRoute(builder: (BuildContext buildContext) {
+  //           return DetailNews(
+  //             // index: index,
+  //             userModel: myUserModel,
+  //           );
+  //         });
+  //         Navigator.of(context).push(materialPageRoute);
+  //       },
+  //     ),
+  //   );
+  // }
 
   Widget logoutBox() {
-    String login = myUserModel.subject;
+    String login = myUserModel!.subject!;
     return Container(
       width: MediaQuery.of(context).size.width * 0.9,
       // height: 80.0,
@@ -520,59 +265,20 @@ class _HomeState extends State<Home> {
 
   Future<void> logOut() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.clear();
-    exit(0);
-  }
+    await sharedPreferences.clear();
+    await sharedPreferences.remove('user');
+    await sharedPreferences.remove('password');
 
-  Widget newsBox() {
-    String login = myUserModel.subject;
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      // height: 80.0,
-      child: GestureDetector(
-        child: Card(
-          // color: Colors.lightBlue.shade50,
-          child: Container(
-            padding: EdgeInsets.all(16.0),
-            alignment: AlignmentDirectional(0.0, 0.0),
-            child: Column(
-              children: <Widget>[
-                Text(
-                  subjectNews, // 'ผู้แทน : $login',
-                  style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-                SizedBox(
-                  width: 10.0,
-                  height: 8.0,
-                ),
-                Image.network(
-                  imageNews,
-                  width: MediaQuery.of(context).size.width * 0.9,
-                ),
-              ],
-            ),
-          ),
-        ),
-        onTap: () {
-          print('This is News');
-          // int index;
-          MaterialPageRoute materialPageRoute =
-              MaterialPageRoute(builder: (BuildContext buildContext) {
-            return DetailNews(
-              // index: index,
-              userModel: myUserModel,
-            );
-          });
-          Navigator.of(context).push(materialPageRoute);
-        },
-      ),
+    // exit(0);
+    MaterialPageRoute materialPageRoute = MaterialPageRoute(
+      builder: (BuildContext buildContext) {
+        return MyApp();
+      },
     );
+    Navigator.of(context).push(materialPageRoute);
   }
 
-  Widget row1Left() {
+  Widget productList() {
     // all product
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
@@ -592,7 +298,7 @@ class _HomeState extends State<Home> {
                 Text(
                   'รายการสินค้า',
                   style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                 ),
@@ -608,7 +314,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget row1Right() {
+  Widget outofStock() {
     // outofstock
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
@@ -628,7 +334,7 @@ class _HomeState extends State<Home> {
                 Text(
                   'ขาดสต๊อก',
                   style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                 ),
@@ -638,7 +344,7 @@ class _HomeState extends State<Home> {
         ),
         onTap: () {
           print('You click newproduct');
-          int index;
+          int? index;
           MaterialPageRoute materialPageRoute =
               MaterialPageRoute(builder: (BuildContext buildContext) {
             return ListProductOutofstock(
@@ -652,7 +358,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget row2Left() {
+  Widget overStock() {
     // overstock
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
@@ -672,7 +378,7 @@ class _HomeState extends State<Home> {
                 Text(
                   'ล้นสต๊อก',
                   style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                 ),
@@ -682,7 +388,7 @@ class _HomeState extends State<Home> {
         ),
         onTap: () {
           print('You click updateprice');
-          int index;
+          int? index;
           MaterialPageRoute materialPageRoute =
               MaterialPageRoute(builder: (BuildContext buildContext) {
             return ListProductOverstock(
@@ -696,7 +402,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget row2Right() {
+  Widget loseSale() {
     // losesale
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
@@ -716,7 +422,7 @@ class _HomeState extends State<Home> {
                 Text(
                   'ไม่เคลื่อนไหว',
                   style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                 ),
@@ -726,7 +432,7 @@ class _HomeState extends State<Home> {
         ),
         onTap: () {
           print('You click recommend');
-          int index;
+          int? index;
           MaterialPageRoute materialPageRoute =
               MaterialPageRoute(builder: (BuildContext buildContext) {
             return ListProductLosesale(
@@ -740,49 +446,95 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // Widget row3Left() {
-  //   // all product
-  //   return Container(
-  //     width: MediaQuery.of(context).size.width * 0.45,
-  //     // height: 80.0,
-  //     child: GestureDetector(
-  //       child: Card(
-  //         // color: Colors.green.shade100,
-  //         child: Container(
-  //           padding: EdgeInsets.all(16.0),
-  //           alignment: AlignmentDirectional(0.0, 0.0),
-  //           child: Column(
-  //             children: <Widget>[
-  //               Container(
-  //                 width: 70.0,
-  //                 child: Image.asset('images/icon_highdemand.png'),
-  //               ),
-  //               Text(
-  //                 'ต้องการใช้งาน',
-  //                 style: TextStyle(
-  //                     fontSize: 18,
-  //                     fontWeight: FontWeight.bold,
-  //                     color: Colors.black),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       ),
-  //       onTap: () {
-  //         print('You click promotion');
-  //         MaterialPageRoute materialPageRoute =
-  //             MaterialPageRoute(builder: (BuildContext buildContext) {
-  //           return ListProductHighdemand(
-  //             userModel: myUserModel,
-  //           );
-  //         });
-  //         Navigator.of(context).push(materialPageRoute);
-  //       },
-  //     ),
-  //   );
-  // }
+  Widget detalSpecialPrice() {
+    // overstock
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.45,
+      // height: 80.0,
+      child: GestureDetector(
+        child: Card(
+          // color: Colors.green.shade100,
+          child: Container(
+            padding: EdgeInsets.all(16.0),
+            alignment: AlignmentDirectional(0.0, 0.0),
+            child: Column(
+              children: <Widget>[
+                Container(
+                  width: 70.0,
+                  child: Image.asset('images/icon_dealspacialprice.png'),
+                ),
+                Text(
+                  'รายการพิเศษ',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+              ],
+            ),
+          ),
+        ),
+        onTap: () {
+          print('You click deal spacialprice');
+          int? index;
+          MaterialPageRoute materialPageRoute =
+              MaterialPageRoute(builder: (BuildContext buildContext) {
+            return ListDealSpacialprice(
+              index: index,
+              userModel: myUserModel,
+            );
+          });
+          Navigator.of(context).push(materialPageRoute);
+        },
+      ),
+    );
+  }
 
-  Widget row3Left() {
+  Widget dealClosesale() {
+    // overstock
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.45,
+      // height: 80.0,
+      child: GestureDetector(
+        child: Card(
+          // color: Colors.green.shade100,
+          child: Container(
+            padding: EdgeInsets.all(16.0),
+            alignment: AlignmentDirectional(0.0, 0.0),
+            child: Column(
+              children: <Widget>[
+                Container(
+                  width: 70.0,
+                  child: Image.asset('images/icon_dealclosesale.png'),
+                ),
+                Text(
+                  'เสนอปิดตัวเลข',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+              ],
+            ),
+          ),
+        ),
+        onTap: () {
+          print('You click monthly report');
+          int? index;
+          MaterialPageRoute materialPageRoute =
+              MaterialPageRoute(builder: (BuildContext buildContext) {
+            return ListDealClosesale(
+              index: index,
+              userModel: myUserModel,
+            );
+          });
+          Navigator.of(context).push(materialPageRoute);
+        },
+      ),
+    );
+  }
+
+  Widget report() {
     // overstock
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
@@ -800,9 +552,9 @@ class _HomeState extends State<Home> {
                   child: Image.asset('images/icon_report.png'),
                 ),
                 Text(
-                  'สรุปยอดรายเดือน',
+                  'สรุปรายเดือน',
                   style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                 ),
@@ -812,7 +564,7 @@ class _HomeState extends State<Home> {
         ),
         onTap: () {
           print('You click monthly report');
-          int index;
+          int? index;
           MaterialPageRoute materialPageRoute =
               MaterialPageRoute(builder: (BuildContext buildContext) {
             return ListProductReport(
@@ -826,8 +578,99 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget row3Right() {
-    String login = myUserModel.subject;
+    Widget report_extrapoint() {
+    // overstock
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.45,
+      // height: 80.0,
+      child: GestureDetector(
+        child: Card(
+          // color: Colors.green.shade100,
+          child: Container(
+            padding: EdgeInsets.all(16.0),
+            alignment: AlignmentDirectional(0.0, 0.0),
+            child: Column(
+              children: <Widget>[
+                Container(
+                  width: 70.0,
+                  child: Image.asset('images/icon_pointredeem.png'),
+                ),
+                Text(
+                  'สรุปคะแนนพิเศษ',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+              ],
+            ),
+          ),
+        ),
+        onTap: () {
+          print('You click monthly report');
+          int? index;
+          MaterialPageRoute materialPageRoute =
+              MaterialPageRoute(builder: (BuildContext buildContext) {
+            return ListPointReport(
+              index: index,
+              userModel: myUserModel,
+            );
+          });
+          Navigator.of(context).push(materialPageRoute);
+        },
+      ),
+    );
+  }
+
+
+
+  Widget dealRaise() {
+    // overstock
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.45,
+      // height: 80.0,
+      child: GestureDetector(
+        child: Card(
+          // color: Colors.green.shade100,
+          child: Container(
+            padding: EdgeInsets.all(16.0),
+            alignment: AlignmentDirectional(0.0, 0.0),
+            child: Column(
+              children: <Widget>[
+                Container(
+                  width: 70.0,
+                  child: Image.asset('images/icon_dealraise.png'),
+                ),
+                Text(
+                  'แจ้งปรับราคา',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+              ],
+            ),
+          ),
+        ),
+        onTap: () {
+          print('You click monthly report');
+          int? index;
+          MaterialPageRoute materialPageRoute =
+              MaterialPageRoute(builder: (BuildContext buildContext) {
+            return ListDealRaise(
+              index: index,
+              userModel: myUserModel,
+            );
+          });
+          Navigator.of(context).push(materialPageRoute);
+        },
+      ),
+    );
+  }
+
+  Widget chart() {
+    String webPage = 'chart';
+    String login = myUserModel!.subject!;
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
       // height: 80.0,
@@ -844,9 +687,9 @@ class _HomeState extends State<Home> {
                   child: Image.asset('images/icon_chart.png'),
                 ),
                 Text(
-                  'ชาร์ทเปรียบเทียบ',
+                  'ชาร์ทยอดขาย',
                   style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                 ),
@@ -859,16 +702,18 @@ class _HomeState extends State<Home> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => WebViewChart(
-                        userModel: myUserModel,
+                  builder: (context) => WebViewExample(
+                        userModel: myUserModel!,
+                        webPage: webPage,
                       )));
         },
       ),
     );
   }
 
-  Widget row4Left() {
-    String login = myUserModel.subject;
+  Widget offerItem() {
+    String webPage = 'offerItem';
+    String login = myUserModel!.subject!;
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
       // height: 80.0,
@@ -887,7 +732,7 @@ class _HomeState extends State<Home> {
                 Text(
                   'เสนอยาใหม่',
                   style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                 ),
@@ -900,15 +745,89 @@ class _HomeState extends State<Home> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => WebView(
+                  builder: (context) => WebViewExample(
                         userModel: myUserModel,
+                        webPage: webPage,
                       )));
         },
       ),
     );
   }
 
-  Widget row4Right() {
+  BoxDecoration myBoxDecoration() {
+    return BoxDecoration(
+      border: Border(
+        top: BorderSide(
+          color: Colors.blueGrey.shade100,
+          width: 1.0,
+        ),
+        // bottom: BorderSide(
+        //   color: Colors.blueGrey.shade100,
+        //   width: 1.0,
+        // ),
+      ),
+    );
+  }
+
+    Widget listNews() {
+    // print('newsModels.length (listNews) >> ' + newsModels!.length.toString());
+    return ListView.builder(
+      controller: scrollController,
+      itemCount: newsModels!.length,
+      itemBuilder: (BuildContext buildContext, int index) {
+        return Column(
+          children: [
+            // Text(newsModels!.length.toString()),
+            GestureDetector(
+              child: Container(
+                height: 70,
+                child: Container(
+                  decoration: myBoxDecoration(),
+                  padding: EdgeInsets.only(top: 1.5),
+                  child: Row(
+                    children: <Widget>[
+                      Flexible(
+                        child: Text(
+                          newsModels![index].subject!,
+                          style: MyStyle().h3Style,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              onTap: () {
+                MaterialPageRoute materialPageRoute =
+                    MaterialPageRoute(builder: (BuildContext buildContext) {
+                  return DetailNews(
+                    newsModel: newsModels![index],
+                    userModel: myUserModel!,
+                  );
+                });
+                Navigator.of(context).push(materialPageRoute);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+
+  Widget showNews() {
+    // print('newsModels.length (showNews) >> ' + newsModels!.length.toString());
+
+    return Card(
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: MediaQuery.of(context).size.height * 0.4,
+        child: newsModels!.isNotEmpty ? listNews() : Container(),
+      ),
+    );
+  }
+
+  Widget logout() {
     // losesale
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
@@ -928,7 +847,7 @@ class _HomeState extends State<Home> {
                 Text(
                   'ออกจากระบบ',
                   style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                 ),
@@ -950,8 +869,8 @@ class _HomeState extends State<Home> {
       // mainAxisSize: MainAxisSize.max,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        row1Left(),
-        row1Right(),
+        productList(),
+        outofStock(),
       ],
     );
   }
@@ -962,8 +881,8 @@ class _HomeState extends State<Home> {
       // mainAxisSize: MainAxisSize.max,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        row2Left(),
-        row2Right(),
+        overStock(),
+        loseSale(),
       ],
     );
   }
@@ -974,8 +893,8 @@ class _HomeState extends State<Home> {
       // mainAxisSize: MainAxisSize.max,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        row3Left(),
-        row3Right(),
+        detalSpecialPrice(),
+        dealClosesale(),
       ],
     );
   }
@@ -986,8 +905,33 @@ class _HomeState extends State<Home> {
       // mainAxisSize: MainAxisSize.max,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        row4Left(),
-        row4Right(),
+        offerItem(),
+        dealRaise(),
+      ],
+    );
+  }
+
+  Widget row5Menu() {
+    return Row(
+      // mainAxisAlignment: MainAxisAlignment.spaceAround,
+      // mainAxisSize: MainAxisSize.max,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        report(),
+        report_extrapoint(),
+      ],
+    );
+  }
+
+  Widget row6Menu() {
+    return Row(
+      // mainAxisAlignment: MainAxisAlignment.spaceAround,
+      // mainAxisSize: MainAxisSize.max,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        // offerItem(),
+        chart(),
+        logout(),
       ],
     );
   }
@@ -1015,6 +959,10 @@ class _HomeState extends State<Home> {
           row3Menu(),
           mySizebox(),
           row4Menu(),
+          mySizebox(),
+          row5Menu(),
+          mySizebox(),
+          row6Menu(),
           // logoutBox(),
           mySizebox(),
           mySizebox(),
@@ -1023,11 +971,15 @@ class _HomeState extends State<Home> {
     );
   }
 
+
+
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: <Widget>[
+          
           headTitle('ข้อมูลของคุณ', Icons.verified_user),
           profileBox(),
           //    headTitle('Seggest Item',Icons.thumb_up),
@@ -1035,11 +987,107 @@ class _HomeState extends State<Home> {
           headTitle('เมนู', Icons.home),
           homeMenu(),
           headTitle('ข่าวสาร', Icons.bookmark),
-          newsBox(),
+          // newsBox(),
+          showNews(),
         ],
       ),
     );
   }
+
+  void showMsg(String msg) {
+    final state = ScaffoldMessenger.of(context);
+    state.showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  
+  String stateText = "";
+    void showPickerDate(BuildContext context) {
+    Picker(
+        hideHeader: true,
+        // adapter: DateTimePickerAdapter(),
+        adapter: DateTimePickerAdapter(
+                  type: PickerDateTimeType.kDMY,
+                  value: DateTime.now().add(const Duration(days: 3)),
+                ),
+        title: Text("Select Data"),
+        selectedTextStyle: TextStyle(color: Colors.blue),
+        onConfirm: (Picker picker, List value) {
+          print((picker.adapter as DateTimePickerAdapter).value);
+          showMsg(picker.adapter.toString());
+
+         setState(() {
+          // var outputFormat = DateFormat('dd/MM/yyyy');
+          // var outputDate = outputFormat.format(picker.adapter);
+            // DateFormat dateFormat = DateFormat("dd/MM/yyyy");
+            // DateTime dateTime = dateFormat.parse(picker.adapter.toString());
+
+            // String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(picker.adapter.toString());
+            stateText = picker.adapter.toString();
+          });     
+    }).showDialog(context);
+  }
+
+  void showPickerDateRange(BuildContext context) {
+    print("canceltext: ${PickerLocalizations.of(context).cancelText}");
+
+    Picker ps = Picker(
+        hideHeader: true,
+        adapter: DateTimePickerAdapter(
+              type: PickerDateTimeType.kDMY,
+              value: DateTime.now().add(const Duration(days: 3)),
+        ),
+        onConfirm: (Picker picker, List value) {
+          print((picker.adapter as DateTimePickerAdapter).value);
+        });
+
+    Picker pe = Picker(
+        hideHeader: true,
+        adapter: DateTimePickerAdapter(
+              type: PickerDateTimeType.kDMY,
+              value: DateTime.now().add(const Duration(days: 5)),
+        ),        onConfirm: (Picker picker, List value) {
+          print((picker.adapter as DateTimePickerAdapter).value);
+        });
+
+    List<Widget> actions = [
+      TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Text(PickerLocalizations.of(context).cancelText ?? '')),
+      TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            ps.onConfirm?.call(ps, ps.selecteds);
+            pe.onConfirm?.call(pe, pe.selecteds);
+            // showMsg(ps.selecteds.toString() + 'To' +pe.selecteds.toString());
+            showMsg(ps.adapter.toString() + 'To' +pe.adapter.toString());
+
+          },
+          child: Text(PickerLocalizations.of(context).confirmText ?? ''))
+    ];
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Select Date Range"),
+            actions: actions,
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text("วันที่เริ่มรายการ:"),
+                ps.makePicker(),
+                Text("จนถึง:"),
+                pe.makePicker()
+              ],
+            ),
+          );
+        });
+  }
+
+
 
   Widget headTitle(String string, IconData iconData) {
     // Widget  แทน object ประเภทไดก็ได้
@@ -1067,8 +1115,107 @@ class _HomeState extends State<Home> {
   }
 }
 
+
+class WebViewExample extends StatefulWidget {
+  final UserModel? userModel;
+  final String? webPage;
+  const WebViewExample({super.key, this.userModel, this.webPage});
+  @override
+  State<WebViewExample> createState() => _WebViewExampleState();
+}
+
+class _WebViewExampleState extends State<WebViewExample> {
+  UserModel? myUserModel;
+  String? mywebPage;
+  late final WebViewController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    myUserModel = widget.userModel;
+    mywebPage = widget.webPage;
+    String? memberId = myUserModel!.id.toString();
+    String? memberCode = myUserModel!.code.toString();
+    String webPage = mywebPage.toString();
+
+
+    String? urlView =
+        'https://ptnpharma.com/supplier/pages/tables/salechart_mobile.php?mode=v&id=$memberId'; //
+    String? txtTitle = 'หน้า.....';
+    
+    if (webPage == 'chart') {
+      urlView =
+          'https://ptnpharma.com/supplier/pages/tables/salechart_mobile.php?mode=v&id=$memberId'; //offerItem
+      txtTitle = 'ชาร์ทยอดขาย';
+    }else if (webPage == 'offerItem') {
+      urlView =
+          'https://ptnpharma.com/supplier/form_offermed_mobile.php?memberId=$memberId&memberCode=$memberCode'; //
+      txtTitle = 'เสนอยาใหม่';
+    } 
+    /*
+     else if (webPage == 'history') {
+      urlView =
+          'https://www.ptnpharma.com/shop/pages/tables/orderhistory_mb.php?memberId=$memberId&memberCode=$memberCode'; //
+      txtTitle = 'ประวัติการสั่งซื้อ';
+    } else if (webPage == 'reward') {
+      urlView =
+          'https://www.ptnpharma.com/shop/pages/tables/reward_list_mb.php?memberId=$memberId&memberCode=$memberCode'; //
+      txtTitle = 'รายการของสมนาคุณ ';
+    } else if (webPage == 'suggestion') {
+      urlView =
+          'https://www.ptnpharma.com/shop/pages/forms/complain_mobile.php?memberId=$memberId&memberCode=$memberCode'; //
+      txtTitle = 'ข้อเสนอแนะ ';
+    } else {
+      urlView =
+          'https://www.ptnpharma.com/shop/pages/forms/complain_mobile.php?memberId=$memberId&memberCode=$memberCode'; //
+      txtTitle = 'แจ้งร้องเรียน';
+    }
+    */
+    // #docregion webview_controller
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            // Update loading bar.
+          },
+          onPageStarted: (String url) {},
+          onPageFinished: (String url) {},
+          onHttpError: (HttpResponseError error) {},
+          onWebResourceError: (WebResourceError error) {},
+          onNavigationRequest: (NavigationRequest request) {
+            if (request.url.startsWith('https://www.youtube.com/')) {
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(urlView));
+    // #enddocregion webview_controller
+  }
+
+
+  // #docregion webview_widget
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+          backgroundColor: Colors.lightBlue,
+          foregroundColor: Colors.white,
+          iconTheme: IconThemeData(color: Colors.white),
+          title:
+              const Text('PTN Pharma', style: TextStyle(color: Colors.white))),
+      body: WebViewWidget(controller: controller),
+    );
+  }
+  // #enddocregion webview_widget
+}
+
+
+/****************************************************************************** 
 class WebViewWidget extends StatefulWidget {
-  WebViewWidget({Key key}) : super(key: key);
+  WebViewWidget({Key? key}) : super(key: key);
 
   @override
   _WebViewWidgetState createState() => _WebViewWidgetState();
@@ -1106,16 +1253,16 @@ class _WebViewWidgetState extends State {
 }
 
 class WebView extends StatefulWidget {
-  final UserModel userModel;
+  final UserModel? userModel;
 
-  WebView({Key key, this.userModel}) : super(key: key);
+  WebView({Key? key, this.userModel}) : super(key: key);
 
   @override
   _WebViewState createState() => _WebViewState();
 }
 
 class _WebViewState extends State<WebView> {
-  UserModel myUserModel;
+  UserModel? myUserModel;
 
   @override
   void initState() {
@@ -1125,8 +1272,8 @@ class _WebViewState extends State<WebView> {
 
   @override
   Widget build(BuildContext context) {
-    String memberId = myUserModel.id.toString();
-    String memberCode = myUserModel.code;
+    String memberId = myUserModel!.id.toString();
+    String memberCode = myUserModel!.code;
     String url =
         'https://ptnpharma.com/supplier/form_offermed_mobile.php?memberId=$memberId&memberCode=$memberCode'; //
     print('URL ==>> $url');
@@ -1146,7 +1293,7 @@ class _WebViewState extends State<WebView> {
 }
 
 class WebViewChartWidget extends StatefulWidget {
-  WebViewChartWidget({Key key}) : super(key: key);
+  WebViewChartWidget({Key? key}) : super(key: key);
 
   @override
   _WebViewChartWidgetState createState() => _WebViewChartWidgetState();
@@ -1186,16 +1333,16 @@ class _WebViewChartWidgetState extends State {
 }
 
 class WebViewChart extends StatefulWidget {
-  final UserModel userModel;
+  final UserModel? userModel;
 
-  WebViewChart({Key key, this.userModel}) : super(key: key);
+  WebViewChart({Key? key, this.userModel}) : super(key: key);
 
   @override
   _WebViewChartState createState() => _WebViewChartState();
 }
 
 class _WebViewChartState extends State<WebViewChart> {
-  UserModel myUserModel;
+  UserModel? myUserModel;
 
   @override
   void initState() {
@@ -1205,8 +1352,8 @@ class _WebViewChartState extends State<WebViewChart> {
 
   @override
   Widget build(BuildContext context) {
-    String memberId = myUserModel.id.toString();
-    String memberCode = myUserModel.code;
+    String memberId = myUserModel!.id.toString();
+    String memberCode = myUserModel!.code;
     String url =
         'https://ptnpharma.com/supplier/pages/tables/salechart_mobile.php?mode=v&id=$memberId'; //
     print('URL ==>> $url');
@@ -1224,3 +1371,4 @@ class _WebViewChartState extends State<WebViewChart> {
     );
   }
 }
+*/

@@ -1,0 +1,2 @@
+D:/ftproject/2025/ptncenter/android/app/.cxx/RelWithDebInfo/5k194f42/arm64-v8a/CMakeFiles/edit_cache.dir
+D:/ftproject/2025/ptncenter/android/app/.cxx/RelWithDebInfo/5k194f42/arm64-v8a/CMakeFiles/rebuild_cache.dir

@@ -15,8 +15,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'detail_cart.dart';
 
 class MyService extends StatefulWidget {
-  final UserModel userModel;
-  MyService({Key key, this.userModel}) : super(key: key);
+  final UserModel? userModel;
+  MyService({Key? key, this.userModel}) : super(key: key);
 
   @override
   _MyServiceState createState() => _MyServiceState();
@@ -24,9 +24,9 @@ class MyService extends StatefulWidget {
 
 class _MyServiceState extends State<MyService> {
   //Explicit
-  UserModel myUserModel;
+  UserModel? myUserModel;
   Widget currentWidget = Home();
-  String qrString;
+  String? qrString;
 
   // Method
   @override
@@ -115,7 +115,7 @@ class _MyServiceState extends State<MyService> {
   }
 
   Widget showLogin() {
-    String login = myUserModel.subject;
+    String login = myUserModel!.subject!;
     if (login == null) {
       login = '...';
     }
@@ -139,6 +139,9 @@ class _MyServiceState extends State<MyService> {
   Future<void> logOut() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     await sharedPreferences.clear();
+    await sharedPreferences.remove('user');
+    await sharedPreferences.remove('password');
+    
     // exit(0);
     MaterialPageRoute materialPageRoute =
         MaterialPageRoute(builder: (BuildContext buildContext) {
@@ -182,6 +185,7 @@ class _MyServiceState extends State<MyService> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: MyStyle().barColor,
+        foregroundColor: Colors.white,
         title: Text('Home'),
       ),
       body: currentWidget,
